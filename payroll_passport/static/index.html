@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payroll Passport</title>
+<link rel="icon" href="data:,">
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5d6673; --border: #dde1e6;
+  --accent: #2f5bd3; --accent-soft: #e8eefc;
+  --ok: #1f7a4d; --ok-soft: #e3f4ea; --warn: #9a6200; --warn-soft: #fdf1dc;
+  --bad: #b3261e; --bad-soft: #fbe6e4; --bar: #2f5bd3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418; --panel: #1a1e24; --text: #e6e9ee; --muted: #9aa3ae; --border: #2c323a;
+    --accent: #7c9dff; --accent-soft: #1f2940;
+    --ok: #5fcf96; --ok-soft: #15291f; --warn: #f0b75a; --warn-soft: #2e2413;
+    --bad: #ff8a80; --bad-soft: #321a19; --bar: #7c9dff;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; align-items: center; gap: 24px; padding: 14px 24px;
+  background: var(--panel); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+header h1 { font-size: 18px; margin: 0; }
+header h1 span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+nav { display: flex; gap: 4px; }
+nav button { background: none; border: 0; padding: 6px 12px; border-radius: 6px; color: var(--muted);
+  font: inherit; cursor: pointer; }
+nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+main { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+.grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .ev { grid-template-columns: 1fr 72px; } }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.card + .card { margin-top: 14px; }
+.card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+  margin: 0 0 10px; }
+label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--text); font: inherit; }
+textarea { resize: vertical; min-height: 64px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; color: var(--text); }
+.check input { width: auto; }
+button.primary { margin-top: 14px; width: 100%; padding: 10px; border: 0; border-radius: 6px;
+  background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+button.primary:disabled { opacity: .6; cursor: wait; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.empty { color: var(--muted); text-align: center; padding: 48px 16px; }
+.decision { border-left: 5px solid var(--border); }
+.decision.ANSWER { border-left-color: var(--ok); background: var(--ok-soft); }
+.decision.ANSWER_WITH_GAPS { border-left-color: var(--warn); background: var(--warn-soft); }
+.decision.ESCALATE { border-left-color: var(--bad); background: var(--bad-soft); }
+.decision .label { font-weight: 700; font-size: 17px; }
+.decision.ANSWER .label { color: var(--ok); }
+.decision.ANSWER_WITH_GAPS .label { color: var(--warn); }
+.decision.ESCALATE .label { color: var(--bad); }
+.answer-text { font-size: 16px; margin: 0 0 10px; white-space: pre-wrap; }
+.chip { display: inline-block; padding: 2px 8px; margin: 2px 4px 2px 0; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent); font-size: 12px; font-family: ui-monospace, monospace; }
+.flag { padding: 8px 10px; border-radius: 6px; margin-top: 6px; font-size: 14px; }
+.flag.warn { background: var(--warn-soft); color: var(--warn); }
+.flag.ask { background: var(--accent-soft); color: var(--accent); }
+.ev { display: grid; grid-template-columns: 1fr 150px; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+.ev:first-of-type { border-top: 0; }
+.ev .title { font-weight: 600; }
+.ev .meta { font-size: 13px; color: var(--muted); }
+.ev .claims { font-size: 13px; font-family: ui-monospace, monospace; margin-top: 2px; }
+.bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; margin-top: 6px; }
+.bar > div { height: 100%; background: var(--bar); }
+.score { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+ul.plain { list-style: none; margin: 0; padding: 0; }
+ul.plain li { padding: 6px 0; border-top: 1px solid var(--border); font-size: 14px; }
+ul.plain li:first-child { border-top: 0; }
+.struck { text-decoration: line-through; color: var(--muted); }
+.reason { color: var(--muted); font-size: 13px; }
+.conflict { background: var(--bad-soft); color: var(--bad); padding: 8px 10px; border-radius: 6px; margin-top: 8px; font-size: 14px; }
+pre.brief { white-space: pre-wrap; font-size: 12px; background: var(--bg); padding: 10px; border-radius: 6px;
+  border: 1px solid var(--border); max-height: 240px; overflow: auto; }
+.pick { max-height: 150px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; }
+.pick .check { margin-top: 4px; font-size: 13px; }
+.toast { margin-top: 10px; padding: 8px 10px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-size: 14px; }
+.error { background: var(--bad-soft); color: var(--bad); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; border-top: 0; }
+.tablewrap { overflow-x: auto; }
+.badge { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Payroll Passport <span>traceable, verifiable payroll answers</span></h1>
+  <nav>
+    <button class="active" data-tab="ask">Ask</button>
+    <button data-tab="kb">Knowledge base</button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-ask" class="grid">
+    <form id="askForm" class="card" autocomplete="off">
+      <h2>Question</h2>
+      <label for="question">Question</label>
+      <textarea id="question" required>What is the adult minimum hourly wage?</textarea>
+      <div class="row">
+        <div><label for="country">Country</label><select id="country"></select></div>
+        <div><label for="date">Pay date</label><input id="date" type="date" required></div>
+      </div>
+      <label for="topic">Topic</label><select id="topic"></select>
+      <div class="row">
+        <div><label for="client">Client</label><select id="client"></select></div>
+        <div><label for="employee">Employee</label><select id="employee"></select></div>
+      </div>
+      <label class="check"><input id="useLlm" type="checkbox"> Draft answer with Claude</label>
+      <div class="hint">Needs an Anthropic API key on the server. Without it, a template answer is shown.</div>
+      <button class="primary" id="askBtn" type="submit">Ask</button>
+    </form>
+
+    <div id="results">
+      <div class="card empty">Ask a question to see the ranked evidence and the decision.</div>
+    </div>
+  </section>
+
+  <section id="tab-kb" class="hidden">
+    <div class="card">
+      <h2>Sources</h2>
+      <div class="hint" id="kbPath"></div>
+      <div class="tablewrap"><table id="kbTable"></table></div>
+    </div>
+  </section>
+</main>
+
+<template id="tpl-validate">
+  <div class="card">
+    <h2>Expert validation</h2>
+    <form class="validate">
+      <label>Expert</label><select name="expert"></select>
+      <label>Validated answer</label><textarea name="answer" required></textarea>
+      <div class="row">
+        <div><label>Rule</label><input name="claim_rule" placeholder="e.g. travel_allowance_per_km"></div>
+        <div class="row">
+          <div><label>Value</label><input name="claim_value"></div>
+          <div><label>Unit</label><input name="claim_unit"></div>
+        </div>
+      </div>
+      <label>Evidence backing the answer</label><div class="pick" data-pick="evidence"></div>
+      <label>Sources the expert rejects (superseded)</label><div class="pick" data-pick="supersedes"></div>
+      <button class="primary" type="submit">Save as knowledge</button>
+      <div class="msg"></div>
+    </form>
+  </div>
+</template>
+
+<script>
+const $ = (sel, root = document) => root.querySelector(sel);
+const el = (tag, props = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const kid of kids) if (kid != null) n.append(kid);
+  return n;
+};
+let META = null, LAST_Q = null;
+
+const ACTION_LABEL = {
+  ANSWER: "Answer",
+  ANSWER_WITH_GAPS: "Answer with gaps",
+  ESCALATE: "Escalate to expert",
+};
+
+async function api(path, body) {
+  const res = await fetch(path, body ? {
+    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body),
+  } : {});
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+function fillSelect(sel, values, {blank} = {}) {
+  sel.replaceChildren();
+  if (blank) sel.append(el("option", {value: blank[0], text: blank[1]}));
+  for (const v of values) sel.append(el("option", {value: v, text: v}));
+}
+
+async function loadMeta() {
+  const first = META === null;
+  const keep = ["#country", "#topic", "#client", "#employee"].map(id => [id, $(id).value]);
+  META = await api("/api/meta");
+  fillSelect($("#country"), META.countries);
+  const withSources = META.countries.filter(c => META.sources.some(s => s.country === c));
+  if (withSources.length) $("#country").value = withSources.includes("NL") ? "NL" : withSources[0];
+  fillSelect($("#topic"), META.topics);
+  fillSelect($("#client"), META.clients, {blank: ["GENERIC", "Any / generic"]});
+  fillSelect($("#employee"), META.employee_scopes, {blank: ["all", "Any employee"]});
+  $("#topic").value = META.topics.includes("min_wage_hourly") ? "min_wage_hourly" : META.topics[0];
+  $("#employee").value = META.employee_scopes.includes("adult") ? "adult" : "all";
+  if (!first) {   // reloading after a save: keep what the consultant had selected
+    for (const [id, v] of keep) if ([...$(id).options].some(o => o.value === v)) $(id).value = v;
+  }
+  renderKb();
+}
+
+function formQuestion() {
+  return {
+    question: $("#question").value, country: $("#country").value, topic: $("#topic").value,
+    date: $("#date").value, client: $("#client").value, employee: $("#employee").value,
+    use_llm: $("#useLlm").checked,
+  };
+}
+
+function fmtClaims(claims) {
+  return claims.map(c => `${c.rule} = ${c.value}${c.unit ? " " + c.unit : ""}`).join("; ");
+}
+
+function renderOutcome(o, q) {
+  const root = $("#results");
+  root.replaceChildren();
+
+  const dec = el("div", {class: `card decision ${o.action}`},
+    el("div", {class: "label", text: ACTION_LABEL[o.action] || o.action}),
+    el("div", {text: o.reasons.join("; ")}));
+  for (const c of o.conflicts) {
+    const parts = Object.entries(c.values).map(([v, ids]) => `${v} (${ids.join(", ")})`);
+    dec.append(el("div", {class: "conflict", text: `Conflict on ${c.rule}: ${parts.join(" vs ")}`}));
+  }
+  root.append(dec);
+
+  if (o.draft) {
+    const card = el("div", {class: "card"}, el("h2", {text: `Answer (${o.draft_mode})`}),
+      el("p", {class: "answer-text", text: o.draft.answer}));
+    const cites = el("div", {}, el("span", {class: "reason", text: "Sources: "}));
+    for (const id of o.draft.cited_source_ids) cites.append(el("span", {class: "chip", text: id}));
+    card.append(cites);
+    for (const p of o.draft.unverified_points) card.append(el("div", {class: "flag warn", text: "Unverified: " + p}));
+    for (const p of o.draft.missing_context_questions) card.append(el("div", {class: "flag ask", text: "Missing context: " + p}));
+    root.append(card);
+  }
+
+  const ev = el("div", {class: "card"}, el("h2", {text: "Ranked evidence (trust-weighted PageRank)"}));
+  if (!o.ranked.length) ev.append(el("div", {class: "reason", text: "No applicable source in force on this date."}));
+  const max = Math.max(...o.ranked.map(r => r.score), 0.0001);
+  for (const r of o.ranked) {
+    const s = r.source;
+    const left = el("div", {},
+      el("div", {class: "title", text: s.title}),
+      el("div", {class: "meta", text: `${s.id} · ${r.notes.join(" · ")} · from ${s.effective_from}${s.effective_to ? " to " + s.effective_to : ""}`}),
+      s.claims.length ? el("div", {class: "claims", text: fmtClaims(s.claims)}) : null);
+    const right = el("div", {}, el("div", {class: "score", text: r.score.toFixed(3)}),
+      el("div", {class: "bar"}, el("div", {style: `width:${(r.score / max * 100).toFixed(1)}%`})));
+    ev.append(el("div", {class: "ev"}, left, right));
+  }
+  root.append(ev);
+
+  if (o.outdated.length || o.not_applicable.length) {
+    const card = el("div", {class: "card"});
+    if (o.outdated.length) {
+      card.append(el("h2", {text: "Flagged outdated"}));
+      const ul = el("ul", {class: "plain"});
+      for (const x of o.outdated) ul.append(el("li", {}, el("span", {class: "struck", text: x.title}),
+        el("div", {class: "reason", text: `${x.id}: ${x.reason}`})));
+      card.append(ul);
+    }
+    if (o.not_applicable.length) {
+      card.append(el("h2", {text: "Not applicable", style: "margin-top:14px"}));
+      const ul = el("ul", {class: "plain"});
+      for (const x of o.not_applicable) ul.append(el("li", {}, el("span", {text: x.title}),
+        el("div", {class: "reason", text: `${x.id}: ${x.reason}`})));
+      card.append(ul);
+    }
+    root.append(card);
+  }
+
+  if (o.action === "ESCALATE") {
+    const card = el("div", {class: "card"}, el("h2", {text: "Route to expert"}));
+    if (!o.experts.length) card.append(el("div", {class: "reason", text: "No expert covers this country. Add one to the knowledge base."}));
+    const ul = el("ul", {class: "plain"});
+    o.experts.forEach((e, i) => ul.append(el("li", {},
+      el("strong", {text: `${i === 0 ? "Suggested: " : ""}${e.name}`}),
+      el("div", {class: "reason", text: `${e.id} · topics: ${e.topics.join(", ")} · open cases: ${e.open_cases}`}))));
+    card.append(ul, el("label", {text: "Case brief sent to the expert"}), el("pre", {class: "brief", text: o.expert_brief}));
+    root.append(card);
+    if (o.experts.length) root.append(validateForm(o, q));
+  }
+}
+
+function validateForm(o, q) {
+  const node = $("#tpl-validate").content.cloneNode(true);
+  const form = $("form", node);
+  fillSelect(form.expert, []);
+  for (const e of o.experts) form.expert.append(el("option", {value: e.id, text: e.name}));
+  const conflictRule = o.conflicts[0]?.rule;
+  if (conflictRule) form.claim_rule.value = conflictRule;
+  const candidates = [...o.ranked.map(r => r.source), ...o.outdated.map(x => ({id: x.id, title: x.title}))];
+  for (const kind of ["evidence", "supersedes"]) {
+    const box = $(`[data-pick=${kind}]`, form);
+    for (const s of candidates) {
+      box.append(el("label", {class: "check"},
+        el("input", {type: "checkbox", value: s.id, name: kind}), el("span", {text: `${s.id} — ${s.title}`})));
+    }
+  }
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const msg = $(".msg", form);
+    const picked = kind => [...form.querySelectorAll(`input[name=${kind}]:checked`)].map(i => i.value);
+    const payload = {...q, expert: form.expert.value, answer: form.answer.value,
+      claims: [{rule: form.claim_rule.value, value: form.claim_value.value, unit: form.claim_unit.value}],
+      evidence: picked("evidence"), supersedes: picked("supersedes")};
+    try {
+      const res = await api("/api/validate", payload);
+      await loadMeta();
+      renderOutcome(res.outcome, q);
+      $("#results").prepend(el("div", {class: "toast",
+        text: `Stored ${res.stored.id}, validated by ${res.stored.validated_by}, review by ${res.stored.review_by}. Question re-run below.`}));
+    } catch (err) {
+      msg.replaceChildren(el("div", {class: "toast error", text: err.message}));
+    }
+  });
+  return node;
+}
+
+function renderKb() {
+  $("#kbPath").textContent = `File: ${META.kb_path} · ${META.sources.length} sources · ${META.experts.length} experts`;
+  const t = $("#kbTable");
+  t.replaceChildren(el("tr", {}, ...["ID", "Title", "Type", "Tier", "Country / client", "Topics", "In force", "Claims", "Validated"]
+    .map(h => el("th", {text: h}))));
+  const rows = [...META.sources].sort((a, b) => a.topics[0].localeCompare(b.topics[0]) || a.tier - b.tier);
+  for (const s of rows) {
+    t.append(el("tr", {},
+      el("td", {}, el("span", {class: "chip", text: s.id})),
+      el("td", {text: s.title}),
+      el("td", {}, el("span", {class: "badge", text: s.type})),
+      el("td", {text: s.tier}),
+      el("td", {text: `${s.country} / ${s.client}`}),
+      el("td", {text: s.topics.join(", ")}),
+      el("td", {text: `${s.effective_from} → ${s.effective_to || "open"}`}),
+      el("td", {text: fmtClaims(s.claims)}),
+      el("td", {text: s.validated_by ? `${s.validated_by} (review ${s.review_by})` : ""})));
+  }
+}
+
+$("#askForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const btn = $("#askBtn");
+  btn.disabled = true; btn.textContent = "Checking sources…";
+  try {
+    LAST_Q = formQuestion();
+    renderOutcome(await api("/api/ask", LAST_Q), LAST_Q);
+  } catch (err) {
+    $("#results").replaceChildren(el("div", {class: "card toast error", text: err.message}));
+  } finally {
+    btn.disabled = false; btn.textContent = "Ask";
+  }
+});
+
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  $("#tab-ask").classList.toggle("hidden", b.dataset.tab !== "ask");
+  $("#tab-kb").classList.toggle("hidden", b.dataset.tab !== "kb");
+}));
+
+$("#date").value = "2026-03-15";
+loadMeta().catch(err => $("#results").replaceChildren(el("div", {class: "card toast error", text: err.message})));
+</script>
+</body>
+</html>
