@@ -1,0 +1,68 @@
+{
+  "_note": "ALL DATA IS FICTIONAL AND ILLUSTRATIVE. Values are not real legislation.",
+  "sources": [
+    {"id": "NL_LAW_MINWAGE_2025", "title": "Minimum Wage Decree 2025 (fictional)", "type": "law", "country": "NL",
+     "topics": ["min_wage_hourly"], "effective_from": "2025-01-01", "effective_to": "2025-12-31",
+     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}], "employee_scope": ["adult"],
+     "text": "Adult statutory minimum hourly wage is EUR 13.00."},
+    {"id": "NL_LAW_MINWAGE_2026", "title": "Minimum Wage Decree 2026 (fictional)", "type": "law", "country": "NL",
+     "topics": ["min_wage_hourly"], "effective_from": "2026-01-01",
+     "claims": [{"rule": "min_wage_hourly", "value": 14.0, "unit": "EUR"}], "employee_scope": ["adult"],
+     "text": "Adult statutory minimum hourly wage is EUR 14.00 from 1 January 2026."},
+    {"id": "INT_GUIDE_2024", "title": "Internal NL payroll guide 2024", "type": "internal_guide", "country": "NL",
+     "topics": ["min_wage_hourly", "holiday_allowance"], "effective_from": "2024-01-01",
+     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}],
+     "text": "Use EUR 13.00 as adult minimum hourly wage."},
+    {"id": "EMAIL_A", "title": "Email: min wage question (2025)", "type": "email", "country": "NL",
+     "topics": ["min_wage_hourly"], "effective_from": "2025-03-01",
+     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}]},
+    {"id": "WIKI_MINWAGE", "title": "Team wiki: minimum wage", "type": "wiki", "country": "NL",
+     "topics": ["min_wage_hourly"], "effective_from": "2025-02-01",
+     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}]},
+    {"id": "KI_NL_MINWAGE_2026", "title": "Validated: adult minimum wage 2026", "type": "knowledge", "country": "NL",
+     "topics": ["min_wage_hourly"], "effective_from": "2026-01-05", "employee_scope": ["adult"],
+     "claims": [{"rule": "min_wage_hourly", "value": 14.0, "unit": "EUR"}],
+     "validated_by": "EXP_NL_1", "review_by": "2027-01-05"},
+
+    {"id": "NL_GUIDE_HOLIDAY", "title": "Official guidance: holiday allowance (fictional)", "type": "official_guidance",
+     "country": "NL", "topics": ["holiday_allowance"], "effective_from": "2020-01-01",
+     "claims": [{"rule": "holiday_allowance_pct", "value": 8.0, "unit": "%"}],
+     "text": "Holiday allowance is at least 8% of gross annual salary."},
+    {"id": "CLIENTX_CONTRACT", "title": "Client X employment terms", "type": "client_contract", "country": "NL",
+     "client": "ClientX", "topics": ["holiday_allowance"], "effective_from": "2025-01-01",
+     "claims": [{"rule": "clientx_holiday_allowance_pct", "value": 8.5, "unit": "%"}],
+     "text": "Client X pays 8.5% holiday allowance (above the statutory minimum)."},
+    {"id": "CLIENTY_CONTRACT", "title": "Client Y employment terms", "type": "client_contract", "country": "NL",
+     "client": "ClientY", "topics": ["holiday_allowance"], "effective_from": "2025-01-01",
+     "claims": [{"rule": "clienty_holiday_allowance_pct", "value": 9.0, "unit": "%"}]},
+
+    {"id": "NL_TAX_TRAVEL_2026", "title": "Tax authority: travel allowance 2026 (fictional)", "type": "tax_authority",
+     "country": "NL", "topics": ["travel_allowance"], "effective_from": "2026-01-01",
+     "claims": [{"rule": "travel_allowance_per_km", "value": 0.23, "unit": "EUR"}]},
+    {"id": "NL_GUIDANCE_TRAVEL_2026", "title": "Ministry FAQ: travel allowance (fictional)", "type": "official_guidance",
+     "country": "NL", "topics": ["travel_allowance"], "effective_from": "2026-01-01",
+     "claims": [{"rule": "travel_allowance_per_km", "value": 0.21, "unit": "EUR"}]},
+
+    {"id": "EMAIL_BONUS", "title": "Email: bonus timing tip", "type": "email", "country": "NL",
+     "topics": ["bonus_tax_timing"], "effective_from": "2025-11-01",
+     "text": "I think bonuses paid in December use the old table."},
+
+    {"id": "NL_LAW_DISMISSAL", "title": "Dismissal Act (fictional)", "type": "law", "country": "NL",
+     "topics": ["termination"], "effective_from": "2015-07-01",
+     "claims": [{"rule": "transition_payment_months_per_year", "value": 0.33, "unit": "months"}]}
+  ],
+  "edges": [
+    {"src": "NL_LAW_MINWAGE_2026", "dst": "NL_LAW_MINWAGE_2025", "relation": "supersedes"},
+    {"src": "INT_GUIDE_2024", "dst": "NL_LAW_MINWAGE_2025", "relation": "cites"},
+    {"src": "EMAIL_A", "dst": "NL_LAW_MINWAGE_2025", "relation": "cites"},
+    {"src": "WIKI_MINWAGE", "dst": "NL_LAW_MINWAGE_2025", "relation": "cites"},
+    {"src": "WIKI_MINWAGE", "dst": "INT_GUIDE_2024", "relation": "cites"},
+    {"src": "KI_NL_MINWAGE_2026", "dst": "NL_LAW_MINWAGE_2026", "relation": "cites"},
+    {"src": "CLIENTX_CONTRACT", "dst": "NL_GUIDE_HOLIDAY", "relation": "cites"}
+  ],
+  "experts": [
+    {"id": "EXP_NL_1", "name": "Expert A (NL payroll)", "countries": ["NL"], "topics": ["min_wage_hourly", "travel_allowance", "bonus_tax_timing"], "open_cases": 2},
+    {"id": "EXP_NL_2", "name": "Expert B (NL employment law)", "countries": ["NL"], "topics": ["termination"], "open_cases": 0},
+    {"id": "EXP_DE_1", "name": "Expert C (DE payroll)", "countries": ["DE"], "topics": ["min_wage_hourly"], "open_cases": 0}
+  ]
+}
