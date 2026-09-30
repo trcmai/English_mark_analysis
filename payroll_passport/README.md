@@ -4,6 +4,7 @@ Answers payroll questions from ranked, traceable evidence, or routes them to an 
 evidence isn't good enough, then stores the expert's validated answer as reusable knowledge.
 
 > The sample knowledge base (`data/sample_kb.json`) is **fictional**. Its values are not real legislation.
+> It covers six countries (NL, DE, BE, FR, UK, VN) and 13 topics, with one expert set per country.
 
 ## How an answer is produced
 

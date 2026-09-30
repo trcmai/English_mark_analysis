@@ -13,8 +13,8 @@ AUTHORITY_TIERS = {
     "law": 1,
     "tax_authority": 1,
     "official_guidance": 2,
-    "knowledge": 3,          # expert-validated knowledge item
-    "collective_agreement": 3,
+    "collective_agreement": 2,   # binding for the sector it covers
+    "knowledge": 3,              # expert-validated knowledge item
     "client_contract": 3,
     "internal_guide": 4,
     "wiki": 5,

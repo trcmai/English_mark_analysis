@@ -1,68 +1,906 @@
 {
-  "_note": "ALL DATA IS FICTIONAL AND ILLUSTRATIVE. Values are not real legislation.",
-  "sources": [
-    {"id": "NL_LAW_MINWAGE_2025", "title": "Minimum Wage Decree 2025 (fictional)", "type": "law", "country": "NL",
-     "topics": ["min_wage_hourly"], "effective_from": "2025-01-01", "effective_to": "2025-12-31",
-     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}], "employee_scope": ["adult"],
-     "text": "Adult statutory minimum hourly wage is EUR 13.00."},
-    {"id": "NL_LAW_MINWAGE_2026", "title": "Minimum Wage Decree 2026 (fictional)", "type": "law", "country": "NL",
-     "topics": ["min_wage_hourly"], "effective_from": "2026-01-01",
-     "claims": [{"rule": "min_wage_hourly", "value": 14.0, "unit": "EUR"}], "employee_scope": ["adult"],
-     "text": "Adult statutory minimum hourly wage is EUR 14.00 from 1 January 2026."},
-    {"id": "INT_GUIDE_2024", "title": "Internal NL payroll guide 2024", "type": "internal_guide", "country": "NL",
-     "topics": ["min_wage_hourly", "holiday_allowance"], "effective_from": "2024-01-01",
-     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}],
-     "text": "Use EUR 13.00 as adult minimum hourly wage."},
-    {"id": "EMAIL_A", "title": "Email: min wage question (2025)", "type": "email", "country": "NL",
-     "topics": ["min_wage_hourly"], "effective_from": "2025-03-01",
-     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}]},
-    {"id": "WIKI_MINWAGE", "title": "Team wiki: minimum wage", "type": "wiki", "country": "NL",
-     "topics": ["min_wage_hourly"], "effective_from": "2025-02-01",
-     "claims": [{"rule": "min_wage_hourly", "value": 13.0, "unit": "EUR"}]},
-    {"id": "KI_NL_MINWAGE_2026", "title": "Validated: adult minimum wage 2026", "type": "knowledge", "country": "NL",
-     "topics": ["min_wage_hourly"], "effective_from": "2026-01-05", "employee_scope": ["adult"],
-     "claims": [{"rule": "min_wage_hourly", "value": 14.0, "unit": "EUR"}],
-     "validated_by": "EXP_NL_1", "review_by": "2027-01-05"},
-
-    {"id": "NL_GUIDE_HOLIDAY", "title": "Official guidance: holiday allowance (fictional)", "type": "official_guidance",
-     "country": "NL", "topics": ["holiday_allowance"], "effective_from": "2020-01-01",
-     "claims": [{"rule": "holiday_allowance_pct", "value": 8.0, "unit": "%"}],
-     "text": "Holiday allowance is at least 8% of gross annual salary."},
-    {"id": "CLIENTX_CONTRACT", "title": "Client X employment terms", "type": "client_contract", "country": "NL",
-     "client": "ClientX", "topics": ["holiday_allowance"], "effective_from": "2025-01-01",
-     "claims": [{"rule": "clientx_holiday_allowance_pct", "value": 8.5, "unit": "%"}],
-     "text": "Client X pays 8.5% holiday allowance (above the statutory minimum)."},
-    {"id": "CLIENTY_CONTRACT", "title": "Client Y employment terms", "type": "client_contract", "country": "NL",
-     "client": "ClientY", "topics": ["holiday_allowance"], "effective_from": "2025-01-01",
-     "claims": [{"rule": "clienty_holiday_allowance_pct", "value": 9.0, "unit": "%"}]},
-
-    {"id": "NL_TAX_TRAVEL_2026", "title": "Tax authority: travel allowance 2026 (fictional)", "type": "tax_authority",
-     "country": "NL", "topics": ["travel_allowance"], "effective_from": "2026-01-01",
-     "claims": [{"rule": "travel_allowance_per_km", "value": 0.23, "unit": "EUR"}]},
-    {"id": "NL_GUIDANCE_TRAVEL_2026", "title": "Ministry FAQ: travel allowance (fictional)", "type": "official_guidance",
-     "country": "NL", "topics": ["travel_allowance"], "effective_from": "2026-01-01",
-     "claims": [{"rule": "travel_allowance_per_km", "value": 0.21, "unit": "EUR"}]},
-
-    {"id": "EMAIL_BONUS", "title": "Email: bonus timing tip", "type": "email", "country": "NL",
-     "topics": ["bonus_tax_timing"], "effective_from": "2025-11-01",
-     "text": "I think bonuses paid in December use the old table."},
-
-    {"id": "NL_LAW_DISMISSAL", "title": "Dismissal Act (fictional)", "type": "law", "country": "NL",
-     "topics": ["termination"], "effective_from": "2015-07-01",
-     "claims": [{"rule": "transition_payment_months_per_year", "value": 0.33, "unit": "months"}]}
-  ],
-  "edges": [
-    {"src": "NL_LAW_MINWAGE_2026", "dst": "NL_LAW_MINWAGE_2025", "relation": "supersedes"},
-    {"src": "INT_GUIDE_2024", "dst": "NL_LAW_MINWAGE_2025", "relation": "cites"},
-    {"src": "EMAIL_A", "dst": "NL_LAW_MINWAGE_2025", "relation": "cites"},
-    {"src": "WIKI_MINWAGE", "dst": "NL_LAW_MINWAGE_2025", "relation": "cites"},
-    {"src": "WIKI_MINWAGE", "dst": "INT_GUIDE_2024", "relation": "cites"},
-    {"src": "KI_NL_MINWAGE_2026", "dst": "NL_LAW_MINWAGE_2026", "relation": "cites"},
-    {"src": "CLIENTX_CONTRACT", "dst": "NL_GUIDE_HOLIDAY", "relation": "cites"}
-  ],
-  "experts": [
-    {"id": "EXP_NL_1", "name": "Expert A (NL payroll)", "countries": ["NL"], "topics": ["min_wage_hourly", "travel_allowance", "bonus_tax_timing"], "open_cases": 2},
-    {"id": "EXP_NL_2", "name": "Expert B (NL employment law)", "countries": ["NL"], "topics": ["termination"], "open_cases": 0},
-    {"id": "EXP_DE_1", "name": "Expert C (DE payroll)", "countries": ["DE"], "topics": ["min_wage_hourly"], "open_cases": 0}
-  ]
+ "_note": "ALL DATA IS FICTIONAL AND ILLUSTRATIVE. Values are not real legislation.",
+ "sources": [
+  {
+   "id": "NL_LAW_MINWAGE_2025",
+   "title": "Minimum Wage Decree 2025 (fictional)",
+   "type": "law",
+   "country": "NL",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-01-01",
+   "effective_to": "2025-12-31",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 13.0,
+     "unit": "EUR"
+    }
+   ],
+   "employee_scope": [
+    "adult"
+   ],
+   "text": "Adult statutory minimum hourly wage is EUR 13.00."
+  },
+  {
+   "id": "NL_LAW_MINWAGE_2026",
+   "title": "Minimum Wage Decree 2026 (fictional)",
+   "type": "law",
+   "country": "NL",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 14.0,
+     "unit": "EUR"
+    }
+   ],
+   "employee_scope": [
+    "adult"
+   ],
+   "text": "Adult statutory minimum hourly wage is EUR 14.00 from 1 January 2026."
+  },
+  {
+   "id": "INT_GUIDE_2024",
+   "title": "Internal NL payroll guide 2024",
+   "type": "internal_guide",
+   "country": "NL",
+   "topics": [
+    "min_wage_hourly",
+    "holiday_allowance"
+   ],
+   "effective_from": "2024-01-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 13.0,
+     "unit": "EUR"
+    }
+   ],
+   "text": "Use EUR 13.00 as adult minimum hourly wage."
+  },
+  {
+   "id": "EMAIL_A",
+   "title": "Email: min wage question (2025)",
+   "type": "email",
+   "country": "NL",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-03-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 13.0,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "WIKI_MINWAGE",
+   "title": "Team wiki: minimum wage",
+   "type": "wiki",
+   "country": "NL",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-02-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 13.0,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "KI_NL_MINWAGE_2026",
+   "title": "Validated: adult minimum wage 2026",
+   "type": "knowledge",
+   "country": "NL",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2026-01-05",
+   "employee_scope": [
+    "adult"
+   ],
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 14.0,
+     "unit": "EUR"
+    }
+   ],
+   "validated_by": "EXP_NL_1",
+   "review_by": "2027-01-05"
+  },
+  {
+   "id": "NL_GUIDE_HOLIDAY",
+   "title": "Official guidance: holiday allowance (fictional)",
+   "type": "official_guidance",
+   "country": "NL",
+   "topics": [
+    "holiday_allowance"
+   ],
+   "effective_from": "2020-01-01",
+   "claims": [
+    {
+     "rule": "holiday_allowance_pct",
+     "value": 8.0,
+     "unit": "%"
+    }
+   ],
+   "text": "Holiday allowance is at least 8% of gross annual salary."
+  },
+  {
+   "id": "CLIENTX_CONTRACT",
+   "title": "Client X employment terms",
+   "type": "client_contract",
+   "country": "NL",
+   "client": "ClientX",
+   "topics": [
+    "holiday_allowance"
+   ],
+   "effective_from": "2025-01-01",
+   "claims": [
+    {
+     "rule": "clientx_holiday_allowance_pct",
+     "value": 8.5,
+     "unit": "%"
+    }
+   ],
+   "text": "Client X pays 8.5% holiday allowance (above the statutory minimum)."
+  },
+  {
+   "id": "CLIENTY_CONTRACT",
+   "title": "Client Y employment terms",
+   "type": "client_contract",
+   "country": "NL",
+   "client": "ClientY",
+   "topics": [
+    "holiday_allowance"
+   ],
+   "effective_from": "2025-01-01",
+   "claims": [
+    {
+     "rule": "clienty_holiday_allowance_pct",
+     "value": 9.0,
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "NL_TAX_TRAVEL_2026",
+   "title": "Tax authority: travel allowance 2026 (fictional)",
+   "type": "tax_authority",
+   "country": "NL",
+   "topics": [
+    "travel_allowance"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "travel_allowance_per_km",
+     "value": 0.23,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "NL_GUIDANCE_TRAVEL_2026",
+   "title": "Ministry FAQ: travel allowance (fictional)",
+   "type": "official_guidance",
+   "country": "NL",
+   "topics": [
+    "travel_allowance"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "travel_allowance_per_km",
+     "value": 0.21,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "EMAIL_BONUS",
+   "title": "Email: bonus timing tip",
+   "type": "email",
+   "country": "NL",
+   "topics": [
+    "bonus_tax_timing"
+   ],
+   "effective_from": "2025-11-01",
+   "text": "I think bonuses paid in December use the old table."
+  },
+  {
+   "id": "NL_LAW_DISMISSAL",
+   "title": "Dismissal Act (fictional)",
+   "type": "law",
+   "country": "NL",
+   "topics": [
+    "termination"
+   ],
+   "effective_from": "2015-07-01",
+   "claims": [
+    {
+     "rule": "transition_payment_months_per_year",
+     "value": 0.33,
+     "unit": "months"
+    }
+   ]
+  },
+  {
+   "id": "DE_LAW_MINWAGE_2025",
+   "title": "Minimum Wage Act 2025 (fictional)",
+   "type": "law",
+   "country": "DE",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-01-01",
+   "effective_to": "2025-12-31",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 12.5,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "DE_LAW_MINWAGE_2026",
+   "title": "Minimum Wage Act 2026 (fictional)",
+   "type": "law",
+   "country": "DE",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 13.2,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "DE_WIKI_MINWAGE",
+   "title": "Team wiki: DE minimum wage",
+   "type": "wiki",
+   "country": "DE",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-03-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 12.5,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "DE_CBA_METAL",
+   "title": "Metal sector collective agreement (fictional)",
+   "type": "collective_agreement",
+   "country": "DE",
+   "topics": [
+    "overtime_premium"
+   ],
+   "effective_from": "2025-04-01",
+   "employee_scope": [
+    "metal_sector"
+   ],
+   "claims": [
+    {
+     "rule": "overtime_premium_pct",
+     "value": 25.0,
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "DE_GUIDE_OVERTIME",
+   "title": "Internal DE overtime guide (fictional)",
+   "type": "internal_guide",
+   "country": "DE",
+   "topics": [
+    "overtime_premium"
+   ],
+   "effective_from": "2024-06-01",
+   "employee_scope": [
+    "office_staff"
+   ],
+   "claims": [
+    {
+     "rule": "overtime_premium_pct",
+     "value": 20.0,
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "DE_SOCSEC_2026",
+   "title": "Social insurance contribution rates 2026 (fictional)",
+   "type": "tax_authority",
+   "country": "DE",
+   "topics": [
+    "social_security_employer"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "employer_social_security_pct",
+     "value": 21.0,
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "DE_EMAIL_SOCSEC",
+   "title": "Email: employer contribution rate",
+   "type": "email",
+   "country": "DE",
+   "topics": [
+    "social_security_employer"
+   ],
+   "effective_from": "2025-02-10",
+   "claims": [
+    {
+     "rule": "employer_social_security_pct",
+     "value": 20.5,
+     "unit": "%"
+    }
+   ],
+   "text": "I believe the employer share is about 20.5%."
+  },
+  {
+   "id": "BE_LAW_MEALVOUCHER_2026",
+   "title": "Royal decree on meal vouchers 2026 (fictional)",
+   "type": "law",
+   "country": "BE",
+   "topics": [
+    "meal_vouchers"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "meal_voucher_max_employer",
+     "value": 8.0,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "BE_CLIENTZ_CONTRACT",
+   "title": "Client Z benefits policy (fictional)",
+   "type": "client_contract",
+   "country": "BE",
+   "topics": [
+    "meal_vouchers"
+   ],
+   "effective_from": "2025-07-01",
+   "client": "ClientZ",
+   "claims": [
+    {
+     "rule": "clientz_meal_voucher_employer",
+     "value": 7.5,
+     "unit": "EUR"
+    }
+   ],
+   "text": "Client Z pays EUR 7.50 employer share per voucher."
+  },
+  {
+   "id": "BE_CBA_JC200",
+   "title": "Joint committee 200 agreement (fictional)",
+   "type": "collective_agreement",
+   "country": "BE",
+   "topics": [
+    "year_end_bonus"
+   ],
+   "effective_from": "2024-01-01",
+   "employee_scope": [
+    "joint_committee_200"
+   ],
+   "claims": [
+    {
+     "rule": "year_end_bonus_months",
+     "value": 1.0,
+     "unit": "months"
+    }
+   ]
+  },
+  {
+   "id": "BE_GUIDE_MINWAGE_2026",
+   "title": "Official guidance: minimum monthly wage 2026 (fictional)",
+   "type": "official_guidance",
+   "country": "BE",
+   "topics": [
+    "min_wage_monthly"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "min_wage_monthly",
+     "value": 2100.0,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "FR_LAW_MINWAGE_2025",
+   "title": "Minimum wage decree 2025 (fictional)",
+   "type": "law",
+   "country": "FR",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-01-01",
+   "effective_to": "2025-12-31",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 11.8,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "FR_LAW_MINWAGE_2026",
+   "title": "Minimum wage decree 2026 (fictional)",
+   "type": "law",
+   "country": "FR",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2026-01-01",
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 12.0,
+     "unit": "EUR"
+    }
+   ]
+  },
+  {
+   "id": "FR_GUIDE_SICKPAY",
+   "title": "Official guidance: sick pay waiting days (fictional)",
+   "type": "official_guidance",
+   "country": "FR",
+   "topics": [
+    "sick_pay"
+   ],
+   "effective_from": "2023-01-01",
+   "claims": [
+    {
+     "rule": "sick_pay_waiting_days",
+     "value": 3.0,
+     "unit": "days"
+    }
+   ]
+  },
+  {
+   "id": "FR_INT_SICKPAY",
+   "title": "Internal FR sick pay checklist (fictional)",
+   "type": "internal_guide",
+   "country": "FR",
+   "topics": [
+    "sick_pay"
+   ],
+   "effective_from": "2024-09-01",
+   "claims": [
+    {
+     "rule": "sick_pay_waiting_days",
+     "value": 7.0,
+     "unit": "days"
+    }
+   ]
+  },
+  {
+   "id": "FR_LAW_TERMINATION",
+   "title": "Labour code: severance (fictional)",
+   "type": "law",
+   "country": "FR",
+   "topics": [
+    "termination"
+   ],
+   "effective_from": "2017-09-01",
+   "claims": [
+    {
+     "rule": "severance_months_per_year",
+     "value": 0.25,
+     "unit": "months"
+    }
+   ]
+  },
+  {
+   "id": "UK_LAW_NMW_2025",
+   "title": "National minimum wage 2025, age 21 and over (fictional)",
+   "type": "law",
+   "country": "UK",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2025-04-01",
+   "effective_to": "2026-03-31",
+   "employee_scope": [
+    "21_plus"
+   ],
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 11.5,
+     "unit": "GBP"
+    }
+   ]
+  },
+  {
+   "id": "UK_LAW_NMW_2026",
+   "title": "National minimum wage 2026, age 21 and over (fictional)",
+   "type": "law",
+   "country": "UK",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2026-04-01",
+   "employee_scope": [
+    "21_plus"
+   ],
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 12.0,
+     "unit": "GBP"
+    }
+   ]
+  },
+  {
+   "id": "UK_LAW_NMW_YOUTH_2026",
+   "title": "National minimum wage 2026, age 18 to 20 (fictional)",
+   "type": "law",
+   "country": "UK",
+   "topics": [
+    "min_wage_hourly"
+   ],
+   "effective_from": "2026-04-01",
+   "employee_scope": [
+    "age_18_20"
+   ],
+   "claims": [
+    {
+     "rule": "min_wage_hourly",
+     "value": 10.0,
+     "unit": "GBP"
+    }
+   ]
+  },
+  {
+   "id": "UK_HMRC_SSP_2025",
+   "title": "Statutory sick pay rates 2025/26 (fictional)",
+   "type": "tax_authority",
+   "country": "UK",
+   "topics": [
+    "sick_pay"
+   ],
+   "effective_from": "2025-04-06",
+   "effective_to": "2026-04-05",
+   "claims": [
+    {
+     "rule": "ssp_weekly",
+     "value": 110.0,
+     "unit": "GBP"
+    }
+   ]
+  },
+  {
+   "id": "UK_HMRC_SSP_2026",
+   "title": "Statutory sick pay rates 2026/27 (fictional)",
+   "type": "tax_authority",
+   "country": "UK",
+   "topics": [
+    "sick_pay"
+   ],
+   "effective_from": "2026-04-06",
+   "claims": [
+    {
+     "rule": "ssp_weekly",
+     "value": 120.0,
+     "unit": "GBP"
+    }
+   ]
+  },
+  {
+   "id": "UK_LAW_PENSION",
+   "title": "Workplace pension auto-enrolment rules (fictional)",
+   "type": "law",
+   "country": "UK",
+   "topics": [
+    "pension_contribution"
+   ],
+   "effective_from": "2019-04-06",
+   "claims": [
+    {
+     "rule": "pension_employer_min_pct",
+     "value": 3.0,
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "UK_KI_PENSION_CLIENTX",
+   "title": "Validated: Client X UK pension matching (fictional)",
+   "type": "knowledge",
+   "country": "UK",
+   "topics": [
+    "pension_contribution"
+   ],
+   "effective_from": "2026-02-01",
+   "client": "ClientX",
+   "claims": [
+    {
+     "rule": "clientx_pension_employer_pct",
+     "value": 5.0,
+     "unit": "%"
+    }
+   ],
+   "validated_by": "EXP_UK_1",
+   "review_by": "2027-02-01"
+  },
+  {
+   "id": "VN_DECREE_MINWAGE_2026",
+   "title": "Decree on regional minimum wage 2026, region I (fictional)",
+   "type": "law",
+   "country": "VN",
+   "topics": [
+    "min_wage_monthly"
+   ],
+   "effective_from": "2026-01-01",
+   "employee_scope": [
+    "region_1"
+   ],
+   "claims": [
+    {
+     "rule": "min_wage_monthly",
+     "value": 5000000.0,
+     "unit": "VND"
+    }
+   ]
+  },
+  {
+   "id": "VN_DECREE_MINWAGE_R2_2026",
+   "title": "Decree on regional minimum wage 2026, region II (fictional)",
+   "type": "law",
+   "country": "VN",
+   "topics": [
+    "min_wage_monthly"
+   ],
+   "effective_from": "2026-01-01",
+   "employee_scope": [
+    "region_2"
+   ],
+   "claims": [
+    {
+     "rule": "min_wage_monthly",
+     "value": 4400000.0,
+     "unit": "VND"
+    }
+   ]
+  },
+  {
+   "id": "VN_LAW_SOCIAL_INSURANCE",
+   "title": "Social insurance law: employer rates (fictional)",
+   "type": "law",
+   "country": "VN",
+   "topics": [
+    "social_security_employer"
+   ],
+   "effective_from": "2025-07-01",
+   "claims": [
+    {
+     "rule": "employer_social_security_pct",
+     "value": 17.5,
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "VN_NOTE_13TH",
+   "title": "Note: 13th month salary practice",
+   "type": "note",
+   "country": "VN",
+   "topics": [
+    "thirteenth_month"
+   ],
+   "effective_from": "2025-12-01",
+   "claims": [],
+   "text": "Most clients pay a 13th month salary before Tet, but I'm not sure it is required."
+  }
+ ],
+ "edges": [
+  {
+   "src": "NL_LAW_MINWAGE_2026",
+   "dst": "NL_LAW_MINWAGE_2025",
+   "relation": "supersedes"
+  },
+  {
+   "src": "INT_GUIDE_2024",
+   "dst": "NL_LAW_MINWAGE_2025",
+   "relation": "cites"
+  },
+  {
+   "src": "EMAIL_A",
+   "dst": "NL_LAW_MINWAGE_2025",
+   "relation": "cites"
+  },
+  {
+   "src": "WIKI_MINWAGE",
+   "dst": "NL_LAW_MINWAGE_2025",
+   "relation": "cites"
+  },
+  {
+   "src": "WIKI_MINWAGE",
+   "dst": "INT_GUIDE_2024",
+   "relation": "cites"
+  },
+  {
+   "src": "KI_NL_MINWAGE_2026",
+   "dst": "NL_LAW_MINWAGE_2026",
+   "relation": "cites"
+  },
+  {
+   "src": "CLIENTX_CONTRACT",
+   "dst": "NL_GUIDE_HOLIDAY",
+   "relation": "cites"
+  },
+  {
+   "src": "DE_LAW_MINWAGE_2026",
+   "dst": "DE_LAW_MINWAGE_2025",
+   "relation": "supersedes"
+  },
+  {
+   "src": "DE_WIKI_MINWAGE",
+   "dst": "DE_LAW_MINWAGE_2025",
+   "relation": "cites"
+  },
+  {
+   "src": "DE_EMAIL_SOCSEC",
+   "dst": "DE_SOCSEC_2026",
+   "relation": "cites"
+  },
+  {
+   "src": "BE_CLIENTZ_CONTRACT",
+   "dst": "BE_LAW_MEALVOUCHER_2026",
+   "relation": "cites"
+  },
+  {
+   "src": "FR_LAW_MINWAGE_2026",
+   "dst": "FR_LAW_MINWAGE_2025",
+   "relation": "supersedes"
+  },
+  {
+   "src": "UK_HMRC_SSP_2026",
+   "dst": "UK_HMRC_SSP_2025",
+   "relation": "supersedes"
+  },
+  {
+   "src": "UK_KI_PENSION_CLIENTX",
+   "dst": "UK_LAW_PENSION",
+   "relation": "cites"
+  },
+  {
+   "src": "UK_LAW_NMW_2026",
+   "dst": "UK_LAW_NMW_2025",
+   "relation": "supersedes"
+  }
+ ],
+ "experts": [
+  {
+   "id": "EXP_NL_1",
+   "name": "Expert A (NL payroll)",
+   "countries": [
+    "NL"
+   ],
+   "topics": [
+    "min_wage_hourly",
+    "travel_allowance",
+    "bonus_tax_timing"
+   ],
+   "open_cases": 2
+  },
+  {
+   "id": "EXP_NL_2",
+   "name": "Expert B (NL employment law)",
+   "countries": [
+    "NL"
+   ],
+   "topics": [
+    "termination"
+   ],
+   "open_cases": 0
+  },
+  {
+   "id": "EXP_DE_1",
+   "name": "Expert C (DE payroll)",
+   "countries": [
+    "DE"
+   ],
+   "topics": [
+    "min_wage_hourly",
+    "overtime_premium",
+    "social_security_employer"
+   ],
+   "open_cases": 0
+  },
+  {
+   "id": "EXP_BE_1",
+   "name": "Expert D (BE payroll)",
+   "countries": [
+    "BE"
+   ],
+   "topics": [
+    "meal_vouchers",
+    "year_end_bonus",
+    "min_wage_monthly"
+   ],
+   "open_cases": 1
+  },
+  {
+   "id": "EXP_FR_1",
+   "name": "Expert E (FR payroll)",
+   "countries": [
+    "FR"
+   ],
+   "topics": [
+    "min_wage_hourly",
+    "sick_pay"
+   ],
+   "open_cases": 3
+  },
+  {
+   "id": "EXP_FR_2",
+   "name": "Expert F (FR employment law)",
+   "countries": [
+    "FR"
+   ],
+   "topics": [
+    "termination"
+   ],
+   "open_cases": 1
+  },
+  {
+   "id": "EXP_UK_1",
+   "name": "Expert G (UK payroll)",
+   "countries": [
+    "UK"
+   ],
+   "topics": [
+    "min_wage_hourly",
+    "sick_pay",
+    "pension_contribution"
+   ],
+   "open_cases": 2
+  },
+  {
+   "id": "EXP_VN_1",
+   "name": "Expert H (VN payroll)",
+   "countries": [
+    "VN"
+   ],
+   "topics": [
+    "min_wage_monthly",
+    "social_security_employer",
+    "thirteenth_month"
+   ],
+   "open_cases": 0
+  }
+ ]
 }

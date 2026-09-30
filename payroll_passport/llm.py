@@ -67,6 +67,13 @@ def template_answer(q: Question, ranked: list[RankedSource], action: Action) -> 
         if s.client == q.client and s.client != GENERIC_CLIENT:
             answer += f" Client-specific terms in {s.title} ({s.id}): {facts(s)}."
             cited.append(s.id)
+    # Employee group not given: show what applies to the other groups too.
+    if ranked[0].needs_context:
+        for r in ranked[1:]:
+            s = r.source
+            if r.needs_context and s.employee_scope != top.employee_scope and s.claims:
+                answer += f" For {' or '.join(s.employee_scope)} employees, {s.title} ({s.id}): {facts(s)}."
+                cited.append(s.id)
     unverified = []
     missing = [f"Confirm that the {n}." for n in ranked[0].needs_context]
     if action == Action.ANSWER_WITH_GAPS and not missing:

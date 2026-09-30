@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
-from .models import Question
+from .models import ANY_EMPLOYEE, Question
 from .ranking import RankingResult
 
 MIN_EVIDENCE_SCORE = 0.10   # ranked sources below this are ignored for conflict checks
@@ -34,15 +34,35 @@ class Decision:
     conflicts: list[Conflict] = field(default_factory=list)
 
 
+def _scopes_overlap(a: list[str], b: list[str]) -> bool:
+    return ANY_EMPLOYEE in a or ANY_EMPLOYEE in b or bool(set(a) & set(b))
+
+
 def find_conflicts(result: RankingResult) -> list[Conflict]:
-    """Same rule, different value, among meaningfully-ranked sources."""
-    by_rule: dict[str, dict[str, list[str]]] = {}
+    """Same rule, different value, among meaningfully-ranked sources covering the same employees.
+
+    Different values for different employee groups (e.g. adult vs youth rates) are not a conflict;
+    they are missing context, handled by the needs_context check.
+    """
+    by_rule: dict[str, list] = {}
     for r in result.ranked:
         if r.score < MIN_EVIDENCE_SCORE:
             continue
         for c in r.source.claims:
-            by_rule.setdefault(c.rule, {}).setdefault(f"{c.value} {c.unit}".strip(), []).append(r.source.id)
-    return [Conflict(rule, vals) for rule, vals in by_rule.items() if len(vals) > 1]
+            by_rule.setdefault(c.rule, []).append((f"{c.value} {c.unit}".strip(), r.source))
+    conflicts = []
+    for rule, items in by_rule.items():
+        clashing = set()
+        for i, (va, sa) in enumerate(items):
+            for vb, sb in items[i + 1:]:
+                if va != vb and _scopes_overlap(sa.employee_scope, sb.employee_scope):
+                    clashing |= {(va, sa.id), (vb, sb.id)}
+        if clashing:
+            values: dict[str, list[str]] = {}
+            for v, sid in sorted(clashing):
+                values.setdefault(v, []).append(sid)
+            conflicts.append(Conflict(rule, values))
+    return conflicts
 
 
 def decide(q: Question, result: RankingResult) -> Decision:

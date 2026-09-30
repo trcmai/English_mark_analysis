@@ -175,3 +175,36 @@ def test_outdated_and_not_applicable_are_disjoint(kb):
     other = rank_evidence(kb, Question("x", "DE", "min_wage_hourly", MARCH_2026))
     assert not set(result.outdated) & set(result.not_applicable)
     assert not set(other.outdated) & set(other.not_applicable)
+
+
+def test_different_employee_groups_are_not_a_conflict(kb):
+    out = ask(kb, Question("overtime?", "DE", "overtime_premium", MARCH_2026), use_llm=False)
+    assert out.decision.conflicts == []
+    assert out.decision.action == Action.ANSWER_WITH_GAPS
+    assert "office_staff" in out.draft.answer          # other group's value is listed too
+
+
+def test_sector_agreement_answers_for_its_sector(kb):
+    out = ask(kb, Question("overtime?", "DE", "overtime_premium", MARCH_2026, employee_ctx="metal_sector"), use_llm=False)
+    assert out.decision.action == Action.ANSWER
+    assert "25.0" in out.draft.answer
+
+
+def test_same_group_disagreement_still_escalates(kb):
+    out = ask(kb, Question("waiting days?", "FR", "sick_pay", MARCH_2026), use_llm=False)
+    assert out.decision.action == Action.ESCALATE
+    assert out.experts[0].id == "EXP_FR_1"
+
+
+def test_uk_rate_depends_on_pay_date(kb):
+    before = ask(kb, Question("ssp?", "UK", "sick_pay", MARCH_2026), use_llm=False)
+    after = ask(kb, Question("ssp?", "UK", "sick_pay", date(2026, 5, 1)), use_llm=False)
+    assert "110.0" in before.draft.answer and "120.0" in after.draft.answer
+    nmw = ask(kb, Question("nmw?", "UK", "min_wage_hourly", MARCH_2026, employee_ctx="21_plus"), use_llm=False)
+    assert "11.5" in nmw.draft.answer
+
+
+def test_every_country_has_an_expert(kb):
+    countries = {s.country for s in kb.sources.values()}
+    covered = {c for e in kb.experts for c in e.countries}
+    assert countries <= covered
