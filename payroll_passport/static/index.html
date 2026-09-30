@@ -91,6 +91,8 @@ th { color: var(--muted); font-weight: 600; border-top: 0; }
 .tablewrap { overflow-x: auto; }
 .badge { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); }
 .hidden { display: none; }
+.topic-line { font-size: 14px; }
+.topic-line .chip { font-family: inherit; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -108,11 +110,11 @@ th { color: var(--muted); font-weight: 600; border-top: 0; }
       <h2>Question</h2>
       <label for="question">Question</label>
       <textarea id="question" required>What is the adult minimum hourly wage?</textarea>
+      <div class="hint">The topic is detected from the question, e.g. "minimum wage", "sick pay", "travel allowance".</div>
       <div class="row">
         <div><label for="country">Country</label><select id="country"></select></div>
         <div><label for="date">Pay date</label><input id="date" type="date" required></div>
       </div>
-      <label for="topic">Topic</label><select id="topic"></select>
       <div class="row">
         <div><label for="client">Client</label><select id="client"></select></div>
         <div><label for="employee">Employee</label><select id="employee"></select></div>
@@ -192,15 +194,13 @@ function fillSelect(sel, values, {blank} = {}) {
 
 async function loadMeta() {
   const first = META === null;
-  const keep = ["#country", "#topic", "#client", "#employee"].map(id => [id, $(id).value]);
+  const keep = ["#country", "#client", "#employee"].map(id => [id, $(id).value]);
   META = await api("/api/meta");
   fillSelect($("#country"), META.countries);
   const withSources = META.countries.filter(c => META.sources.some(s => s.country === c));
   if (withSources.length) $("#country").value = withSources.includes("NL") ? "NL" : withSources[0];
-  fillSelect($("#topic"), META.topics);
   fillSelect($("#client"), META.clients, {blank: ["GENERIC", "Any / generic"]});
   fillSelect($("#employee"), META.employee_scopes, {blank: ["all", "Any employee"]});
-  $("#topic").value = META.topics.includes("min_wage_hourly") ? "min_wage_hourly" : META.topics[0];
   $("#employee").value = META.employee_scopes.includes("adult") ? "adult" : "all";
   if (!first) {   // reloading after a save: keep what the consultant had selected
     for (const [id, v] of keep) if ([...$(id).options].some(o => o.value === v)) $(id).value = v;
@@ -210,7 +210,7 @@ async function loadMeta() {
 
 function formQuestion() {
   return {
-    question: $("#question").value, country: $("#country").value, topic: $("#topic").value,
+    question: $("#question").value, country: $("#country").value,
     date: $("#date").value, client: $("#client").value, employee: $("#employee").value,
     use_llm: $("#useLlm").checked,
   };
@@ -220,9 +220,26 @@ function fmtClaims(claims) {
   return claims.map(c => `${c.rule} = ${c.value}${c.unit ? " " + c.unit : ""}`).join("; ");
 }
 
+const topicName = t => t.replace(/_/g, " ");
+
+function topicLine(t) {
+  const how = t.method === "claude" ? "classified by Claude"
+    : t.method === "previous" ? "same question as before"
+    : "from: " + t.matched.map(m => `"${m}"`).join(", ");
+  return el("div", {class: "topic-line"}, el("span", {class: "reason", text: "Topic "}),
+    el("span", {class: "chip", text: topicName(t.topic)}), el("span", {class: "reason", text: " " + how}));
+}
+
+function renderUnresolved(res) {
+  const card = el("div", {class: "card decision ESCALATE"},
+    el("div", {class: "label", text: "Rephrase the question"}), el("div", {text: res.message}));
+  $("#results").replaceChildren(card);
+}
+
 function renderOutcome(o, q) {
   const root = $("#results");
   root.replaceChildren();
+  if (o.topic) { q.topic = o.topic.topic; root.append(topicLine(o.topic)); }
 
   const dec = el("div", {class: `card decision ${o.action}`},
     el("div", {class: "label", text: ACTION_LABEL[o.action] || o.action}),
@@ -352,7 +369,8 @@ $("#askForm").addEventListener("submit", async ev => {
   btn.disabled = true; btn.textContent = "Checking sources…";
   try {
     LAST_Q = formQuestion();
-    renderOutcome(await api("/api/ask", LAST_Q), LAST_Q);
+    const res = await api("/api/ask", LAST_Q);
+    if (res.action) renderOutcome(res, LAST_Q); else renderUnresolved(res);
   } catch (err) {
     $("#results").replaceChildren(el("div", {class: "card toast error", text: err.message}));
   } finally {

@@ -21,6 +21,7 @@ from .assistant import Outcome, ask
 from .capture import capture
 from .knowledge_base import DEFAULT_KB, KnowledgeBase
 from .models import Claim, Question, Source
+from .topics import explain_unresolved, resolve_topic
 
 STATIC = Path(__file__).parent / "static"
 
@@ -87,7 +88,18 @@ class App:
         }
 
     def ask(self, p: dict) -> dict:
-        return outcome_dict(ask(self.kb, _question(p), use_llm=bool(p.get("use_llm"))), self.kb)
+        """The topic is detected from the question text; the result says which words decided it."""
+        if not str(p.get("question", "")).strip():
+            raise ValueError("missing field: question")
+        use_llm = bool(p.get("use_llm"))
+        match = resolve_topic(p["question"], self.kb.sources.values(), p.get("country", ""), use_llm)
+        detected = {"topic": match.topic, "matched": match.matched, "method": match.method,
+                    "candidates": match.candidates, "reason": match.reason}
+        if match.topic is None:
+            return {"topic": detected, "message": explain_unresolved(match)}
+        result = outcome_dict(ask(self.kb, _question({**p, "topic": match.topic}), use_llm=use_llm), self.kb)
+        result["topic"] = detected
+        return result
 
     def validate(self, p: dict) -> dict:
         q = _question(p)
@@ -103,7 +115,9 @@ class App:
         item = capture(self.kb, q, p.get("expert", ""), p.get("answer", "").strip(), claims,
                        p.get("evidence", []), p.get("supersedes", []))
         self.kb.save(self.kb_path)
-        return {"stored": _source_dict(item), "outcome": outcome_dict(ask(self.kb, q, use_llm=False), self.kb)}
+        outcome = outcome_dict(ask(self.kb, q, use_llm=False), self.kb)
+        outcome["topic"] = {"topic": q.topic, "matched": [], "method": "previous", "candidates": [], "reason": ""}
+        return {"stored": _source_dict(item), "outcome": outcome}
 
 
 def make_handler(app: App):

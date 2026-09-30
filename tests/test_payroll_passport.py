@@ -208,3 +208,37 @@ def test_every_country_has_an_expert(kb):
     countries = {s.country for s in kb.sources.values()}
     covered = {c for e in kb.experts for c in e.countries}
     assert countries <= covered
+
+
+from payroll_passport.topics import detect_topic, resolve_topic, topics_for_country
+
+
+@pytest.mark.parametrize("country,question,topic", [
+    ("NL", "What is the adult minimum hourly wage?", "min_wage_hourly"),
+    ("VN", "What is the minimum wage?", "min_wage_monthly"),        # same words, country decides
+    ("BE", "What is the minimum wage?", "min_wage_monthly"),
+    ("NL", "Can we reimburse commuting costs?", "travel_allowance"),
+    ("FR", "What is the SMIC?", "min_wage_hourly"),
+    ("BE", "Do we pay a year-end bonus?", "year_end_bonus"),          # "bonus" inside a longer phrase
+    ("NL", "Is the year-end bonus taxed at the special rate?", "bonus_tax_timing"),
+    ("NL", "What is the pension contribution?", "pension_contribution"),  # known topic, no NL sources
+])
+def test_topic_detected_from_question(kb, country, question, topic):
+    assert detect_topic(question, topics_for_country(kb.sources.values(), country)).topic == topic
+
+
+def test_mixed_topics_are_not_guessed(kb):
+    m = detect_topic("sick leave and termination rules", topics_for_country(kb.sources.values(), "FR"))
+    assert m.topic is None and m.reason == "several_topics"
+    assert set(m.candidates) == {"sick_pay", "termination"}
+
+
+def test_unknown_topic_is_not_guessed(kb):
+    m = resolve_topic("How do I file the payroll return?", kb.sources.values(), "NL", use_llm=False)
+    assert m.topic is None and m.reason == "no_match"
+
+
+def test_detected_topic_without_country_sources_escalates(kb):
+    m = resolve_topic("What is the pension contribution?", kb.sources.values(), "NL")
+    out = ask(kb, Question("pension?", "NL", m.topic, MARCH_2026), use_llm=False)
+    assert out.decision.action == Action.ESCALATE

@@ -127,3 +127,30 @@ def draft_answer(q: Question, ranked: list[RankedSource], action: Action, use_ll
         draft.unverified_points.append(
             "Answer contained citations outside the evidence set or no citations; verify before use.")
     return draft, "llm"
+
+
+class TopicChoice(BaseModel):
+    topic: str
+
+
+def classify_topic(question: str, topics: list[str]) -> str | None:
+    """Ask Claude to map a question to one known topic. Returns None if unavailable or unsure."""
+    try:
+        import anthropic
+        response = anthropic.Anthropic().beta.messages.parse(
+            model=MODEL,
+            max_tokens=1000,
+            system=("Classify a payroll consultant's question into exactly one topic from the list, or answer "
+                    "'none' if it fits none of them or covers several. Reply with the topic id only."),
+            messages=[{"role": "user", "content": f"Topics: {', '.join(topics)}\n\nQuestion: {question}"}],
+            output_format=TopicChoice,
+            output_config={"effort": "low"},
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+        )
+    except Exception:
+        return None
+    if response.stop_reason == "refusal" or response.parsed_output is None:
+        return None
+    topic = response.parsed_output.topic.strip()
+    return topic if topic in topics else None
