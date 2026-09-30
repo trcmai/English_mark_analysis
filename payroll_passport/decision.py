@@ -91,6 +91,10 @@ def decide(q: Question, result: RankingResult) -> Decision:
         decision = Decision(Action.ANSWER_WITH_GAPS, ["only mid-authority evidence; answer must list what is unverified"])
     else:
         return Decision(Action.ESCALATE, ["only low-authority evidence (emails/notes/wiki)"])
+    # Web sources are unreviewed: an expert validates before the answer counts as plain.
+    if decision.action == Action.ANSWER and top.source.origin == "web":
+        decision.action = Action.ANSWER_WITH_GAPS
+        decision.reasons.append("based on web sources that no expert has validated yet")
     # An inferred or mixed topic can never produce a plain answer: the consultant confirms the topic.
     if q.topic_confidence != "high":
         decision.action = Action.ANSWER_WITH_GAPS

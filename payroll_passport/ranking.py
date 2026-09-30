@@ -139,6 +139,9 @@ def rank_evidence(kb: KnowledgeBase, q: Question) -> RankingResult:
                 notes.append(f"validated by {s.validated_by}")
         if s.client != GENERIC_CLIENT:
             notes.append(f"client-specific ({s.client})")
+        if s.origin == "web":
+            host = s.url.split("/")[2] if s.url.count("/") >= 2 else s.url
+            notes.append(f"from the web ({host}, retrieved {s.retrieved_at}), not yet validated by an expert")
         needs = []
         if q.employee_ctx == ANY_EMPLOYEE and ANY_EMPLOYEE not in s.employee_scope:
             needs.append(f"employee is {' or '.join(s.employee_scope)}")

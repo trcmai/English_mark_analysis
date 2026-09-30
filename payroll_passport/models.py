@@ -18,6 +18,7 @@ AUTHORITY_TIERS = {
     "client_contract": 3,
     "internal_guide": 4,
     "wiki": 5,
+    "web_commentary": 5,         # web page not on an official domain
     "email": 6,
     "note": 6,
 }
@@ -47,6 +48,9 @@ class Source:
     url: str = ""
     validated_by: Optional[str] = None
     review_by: Optional[date] = None
+    origin: str = "internal"                 # internal | web
+    retrieved_at: Optional[date] = None      # web sources: when it was fetched
+    checks: list[str] = field(default_factory=list)   # web sources: reliability checks it passed / flags
 
     @property
     def tier(self) -> int:

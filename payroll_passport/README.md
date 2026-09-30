@@ -27,8 +27,16 @@ evidence isn't good enough, then stores the expert's validated answer as reusabl
 7. **Draft** (`llm.py`): Claude phrases the answer **only from the ranked evidence** (structured
    output, citations checked against the evidence set). Without API credentials, a deterministic
    template answer is used.
-8. **Escalate** (`experts.py`): experts ranked by country, topic and load, with a prepared case brief.
-9. **Capture** (`capture.py`): the validated answer becomes a knowledge item with evidence links and
+8. **Web research** (`web_research.py`, opt-in: `--web` / the "Search the web" checkbox). When no source
+   applies, Claude searches and reads pages (web search and web fetch tools) and records each value with a
+   verbatim quote. Plain code then checks every record: the URL was really returned by the search, the
+   quote is on the fetched page word for word, the value is in the quote, an effective date is stated
+   and in force on the pay date, and the domain is official for the country (otherwise it ranks as web
+   commentary, tier 5). Agreement across independent sites is counted; disagreements escalate through the
+   normal conflict check. Accepted sources are stored with `origin: web` and never give a plain "Answer"
+   until an expert validates it.
+9. **Escalate** (`experts.py`): experts ranked by country, topic and load, with a prepared case brief.
+10. **Capture** (`capture.py`): the validated answer becomes a knowledge item with evidence links and
    a 12-month review date; it can supersede the source the expert rejected.
 
 ## Requirements
@@ -77,6 +85,11 @@ The Claude call uses `claude-opus-5-5` with server-side refusal fallbacks (`fall
 and reads credentials from `ANTHROPIC_API_KEY` or an `ant auth login` profile.
 
 ## Known limitations
+
+- Web research has only been tested against simulated search sessions, not the live API. It checks that
+  quotes are real and contain the value, not that the value means what the rule name says. Quotes from
+  PDFs usually can't be checked (the fetched text is not plain), so those sources are rejected. The
+  official-domain lists in `web_research.py` are a starting set; review them per country.
 
 - Topic similarity compares word fragments, not meaning: it catches typos and shared wording, but can pick the
   wrong topic for paraphrases (these come out as low confidence). There is no document ingestion yet.

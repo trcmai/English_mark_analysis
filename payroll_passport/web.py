@@ -33,7 +33,8 @@ def _source_dict(s: Source) -> dict:
         "effective_from": s.effective_from.isoformat(),
         "effective_to": s.effective_to.isoformat() if s.effective_to else None,
         "claims": [{"rule": c.rule, "value": c.value, "unit": c.unit} for c in s.claims],
-        "text": s.text, "validated_by": s.validated_by,
+        "text": s.text, "validated_by": s.validated_by, "url": s.url, "origin": s.origin,
+        "checks": s.checks,
         "review_by": s.review_by.isoformat() if s.review_by else None,
     }
 
@@ -54,6 +55,13 @@ def outcome_dict(out: Outcome, kb: KnowledgeBase) -> dict:
         "experts": [{"id": e.id, "name": e.name, "topics": e.topics, "open_cases": e.open_cases}
                     for e in out.experts or []],
         "expert_brief": out.expert_brief,
+        "web": None if out.web is None else {
+            "error": out.web.error,
+            "results": [{"url": v.candidate.url, "title": v.candidate.title, "domain": v.domain,
+                         "official": v.official, "accepted": v.accepted, "source_id": v.source_id,
+                         "quote": v.candidate.quote, "claim": f"{v.candidate.rule} = {v.candidate.value:g} {v.candidate.unit}".strip(),
+                         "checks": v.checks} for v in out.web.verdicts],
+        },
     }
     if out.draft:
         d["draft"] = out.draft.model_dump()
@@ -98,7 +106,10 @@ class App:
             match = resolve_topic(p["question"], self.kb.sources.values(), p.get("country", ""), use_llm)
         q = _question({**p, "topic": match.topic})
         q.topic_confidence, q.topic_note = match.confidence, describe(match)
-        result = outcome_dict(ask(self.kb, q, use_llm=use_llm), self.kb)
+        out = ask(self.kb, q, use_llm=use_llm, use_web=bool(p.get("use_web")))
+        if out.web and out.web.accepted:
+            self.kb.save(self.kb_path)      # keep verified web sources (flagged origin=web) for next time
+        result = outcome_dict(out, self.kb)
         result["topic"] = {"topic": match.topic, "method": match.method, "confidence": match.confidence,
                            "description": describe(match), "alternatives": match.alternatives}
         return result

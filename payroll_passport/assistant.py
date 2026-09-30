@@ -10,6 +10,7 @@ from .knowledge_base import KnowledgeBase
 from .llm import DraftAnswer, draft_answer
 from .models import Expert, Question
 from .ranking import RankingResult, rank_evidence
+from .web_research import WebResearch, research
 
 
 @dataclass
@@ -21,12 +22,19 @@ class Outcome:
     draft_mode: str = ""
     experts: list[Expert] = None
     expert_brief: str = ""
+    web: Optional[WebResearch] = None      # set when a web search was run
 
 
-def ask(kb: KnowledgeBase, q: Question, use_llm: bool = True) -> Outcome:
+def ask(kb: KnowledgeBase, q: Question, use_llm: bool = True, use_web: bool = False, web_client=None) -> Outcome:
+    """use_web: when no source applies, search the web, verify what is found, and rank it with the rest."""
     ranking = rank_evidence(kb, q)
+    web = None
+    if not ranking.ranked and use_web:
+        web = research(kb, q, web_client)
+        if web.accepted:
+            ranking = rank_evidence(kb, q)
     decision = decide(q, ranking)
-    out = Outcome(q, ranking, decision, experts=[])
+    out = Outcome(q, ranking, decision, experts=[], web=web)
     if decision.action in (Action.ANSWER, Action.ANSWER_WITH_GAPS):
         out.draft, out.draft_mode = draft_answer(q, ranking.ranked, decision.action, use_llm)
     else:
@@ -48,6 +56,14 @@ def render(out: Outcome) -> str:
     if out.ranking.not_applicable:
         lines.append("Not applicable:")
         lines += [f"  {sid}: {why}" for sid, why in out.ranking.not_applicable.items()]
+    if out.web:
+        lines.append("Web research:" + (f" {out.web.error}" if out.web.error else ""))
+        for v in out.web.verdicts:
+            lines.append(f"  {'ACCEPTED' if v.accepted else 'REJECTED'} {v.candidate.url}"
+                         + (f" -> {v.source_id}" if v.source_id else ""))
+            lines += [f"    {c}" for c in v.checks]
+        if not out.web.verdicts and not out.web.error:
+            lines.append("  nothing usable found")
     lines.append("")
     if out.draft:
         lines.append(f"ANSWER ({out.draft_mode}):")

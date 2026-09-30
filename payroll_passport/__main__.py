@@ -61,6 +61,8 @@ def main(argv=None) -> None:
     a_ask = sub.add_parser("ask", help="answer a question or route it to an expert")
     common(a_ask, True)
     a_ask.add_argument("--no-llm", action="store_true", help="use the deterministic template answer")
+    a_ask.add_argument("--web", action="store_true",
+                       help="if no source applies, search the web with Claude and verify what it finds")
 
     a_val = sub.add_parser("validate", help="store an expert-validated answer as knowledge")
     common(a_val, False)
@@ -73,7 +75,11 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     if a.cmd == "ask":
         kb = KnowledgeBase.load(a.kb)
-        print(render(ask(kb, _question(a, use_llm=not a.no_llm), use_llm=not a.no_llm)))
+        out = ask(kb, _question(a, use_llm=not a.no_llm), use_llm=not a.no_llm, use_web=a.web)
+        print(render(out))
+        if out.web and out.web.accepted and Path(a.kb).resolve() != DEFAULT_KB.resolve():
+            kb.save(a.kb)
+            print(f"\nSaved {len(out.web.accepted)} verified web source(s) to {a.kb}")
     else:
         kb_path = Path(a.kb)
         if kb_path.resolve() == DEFAULT_KB.resolve():

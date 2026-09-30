@@ -92,6 +92,15 @@ th { color: var(--muted); font-weight: 600; border-top: 0; }
 .badge { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); }
 .hidden { display: none; }
 .topic-line { font-size: 14px; }
+.meta { font-size: 13px; color: var(--muted); }
+.webrow { padding: 10px 0; border-top: 1px solid var(--border); }
+.card h2 + .webrow { border-top: 0; padding-top: 0; }
+blockquote.quote { margin: 6px 0; padding: 4px 10px; border-left: 3px solid var(--border); color: var(--muted); font-size: 13px; }
+ul.checks { list-style: none; padding: 0; margin: 4px 0 0; font-size: 13px; }
+ul.checks li::before { display: inline-block; width: 1.4em; }
+.chk-ok::before { content: "✓"; color: var(--ok); }
+.chk-flag::before { content: "!"; color: var(--warn); font-weight: 700; }
+.chk-fail::before { content: "✗"; color: var(--bad); }
 .topic-line .chip { font-family: inherit; font-size: 13px; }
 .conf { font-size: 12px; padding: 1px 7px; border-radius: 999px; margin: 0 4px; }
 .conf-high { background: var(--ok-soft); color: var(--ok); }
@@ -126,7 +135,8 @@ button.alt { font: inherit; font-size: 13px; background: none; border: 1px solid
         <div><label for="employee">Employee</label><select id="employee"></select></div>
       </div>
       <label class="check"><input id="useLlm" type="checkbox"> Draft answer with Claude</label>
-      <div class="hint">Needs an Anthropic API key on the server. Without it, a template answer is shown.</div>
+      <label class="check"><input id="useWeb" type="checkbox"> Search the web if no source is found</label>
+      <div class="hint">Both need an Anthropic API key on the server. Web results are verified and never count as a final answer until an expert validates them.</div>
       <button class="primary" id="askBtn" type="submit">Ask</button>
     </form>
 
@@ -216,7 +226,7 @@ async function loadMeta() {
 
 function formQuestion() {
   return {
-    question: $("#question").value, country: $("#country").value,
+    question: $("#question").value, country: $("#country").value, use_web: $("#useWeb").checked,
     date: $("#date").value, client: $("#client").value, employee: $("#employee").value,
     use_llm: $("#useLlm").checked,
   };
@@ -244,6 +254,26 @@ function topicLine(t, q) {
   return line;
 }
 
+function webPanel(w) {
+  const card = el("div", {class: "card"}, el("h2", {text: "Web research"}));
+  if (w.error) card.append(el("div", {class: "toast error", text: w.error}));
+  if (!w.error && !w.results.length) card.append(el("div", {class: "reason", text: "The search found nothing usable."}));
+  for (const r of w.results) {
+    const head = el("div", {class: "title"},
+      el("span", {class: `conf ${r.accepted ? "conf-high" : "conf-low"}`, text: r.accepted ? "accepted" : "rejected"}), " ",
+      el("a", {href: r.url, target: "_blank", rel: "noopener noreferrer", text: r.title || r.domain}));
+    const meta = el("div", {class: "meta", text: `${r.domain}${r.official ? " · official domain" : ""} · ${r.claim}${r.source_id ? " · saved as " + r.source_id : ""}`});
+    const quote = el("blockquote", {class: "quote", text: r.quote});
+    const checks = el("ul", {class: "checks"});
+    for (const c of r.checks) {
+      const kind = c.split(":")[0];
+      checks.append(el("li", {class: "chk-" + kind, text: c.slice(kind.length + 1).trim()}));
+    }
+    card.append(el("div", {class: "webrow"}, head, meta, quote, checks));
+  }
+  return card;
+}
+
 function renderOutcome(o, q) {
   const root = $("#results");
   root.replaceChildren();
@@ -257,6 +287,8 @@ function renderOutcome(o, q) {
     dec.append(el("div", {class: "conflict", text: `Conflict on ${c.rule}: ${parts.join(" vs ")}`}));
   }
   root.append(dec);
+
+  if (o.web) root.append(webPanel(o.web));
 
   if (o.draft) {
     const card = el("div", {class: "card"}, el("h2", {text: `Answer (${o.draft_mode})`}),

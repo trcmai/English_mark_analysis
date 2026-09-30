@@ -37,6 +37,9 @@ class KnowledgeBase:
                 text=s.get("text", ""), url=s.get("url", ""),
                 validated_by=s.get("validated_by"),
                 review_by=_d(s.get("review_by")),
+                origin=s.get("origin", "internal"),
+                retrieved_at=_d(s.get("retrieved_at")),
+                checks=s.get("checks", []),
             )
         edges = [Edge(**e) for e in raw.get("edges", [])]
         experts = [Expert(**e) for e in raw.get("experts", [])]
