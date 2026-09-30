@@ -23,10 +23,14 @@ evidence isn't good enough, then stores the expert's validated answer as reusabl
 8. **Capture** (`capture.py`): the validated answer becomes a knowledge item with evidence links and
    a 12-month review date; it can supersede the source the expert rejected.
 
+## Requirements
+
+Python 3.12 or newer (tested on 3.12 and 3.13; `.python-version` selects 3.13 for uv/pyenv).
+
 ## Web interface
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt       # or: uv sync
 python -m payroll_passport.web            # http://127.0.0.1:8000
 ```
 

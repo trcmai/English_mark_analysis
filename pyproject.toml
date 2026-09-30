@@ -1,0 +1,20 @@
+[project]
+name = "payroll-passport"
+version = "0.1.0"
+description = "Traceable, verifiable payroll answers: trust-ranked evidence, expert routing, knowledge capture"
+readme = "payroll_passport/README.md"
+requires-python = ">=3.12"
+dependencies = ["anthropic>=1.9", "pydantic>=2"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "playwright>=1.50"]
+
+[tool.setuptools]
+packages = ["payroll_passport"]
+
+[tool.setuptools.package-data]
+payroll_passport = ["data/*.json", "static/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
