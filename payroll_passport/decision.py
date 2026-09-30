@@ -47,7 +47,7 @@ def find_conflicts(result: RankingResult) -> list[Conflict]:
 
 def decide(q: Question, result: RankingResult) -> Decision:
     if not result.ranked:
-        return Decision(Action.ESCALATE, ["no applicable source in force on the question date"])
+        return Decision(Action.ESCALATE, ["no source applies to this country, client, employee and date"])
 
     conflicts = find_conflicts(result)
     top = result.ranked[0]
@@ -59,6 +59,9 @@ def decide(q: Question, result: RankingResult) -> Decision:
         return Decision(Action.ESCALATE, [f"'{q.topic}' is a high-risk topic: expert sign-off required"], conflicts)
     if conflicts:
         return Decision(Action.ESCALATE, ["ranked sources disagree"], conflicts)
+    if top.needs_context:
+        return Decision(Action.ANSWER_WITH_GAPS,
+                        [f"top evidence only applies if {' and '.join(top.needs_context)}: confirm with the consultant"])
     if top.score >= MIN_TOP_SCORE and (best_tier <= 2 or top_is_current_validated):
         return Decision(Action.ANSWER, [f"top source {top.source.id} is authoritative and uncontested"])
     if best_tier <= 4:

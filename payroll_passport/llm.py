@@ -68,14 +68,15 @@ def template_answer(q: Question, ranked: list[RankedSource], action: Action) -> 
             answer += f" Client-specific terms in {s.title} ({s.id}): {facts(s)}."
             cited.append(s.id)
     unverified = []
-    if action == Action.ANSWER_WITH_GAPS:
+    missing = [f"Confirm that the {n}." for n in ranked[0].needs_context]
+    if action == Action.ANSWER_WITH_GAPS and not missing:
         unverified.append(f"Top evidence is only authority tier {top.tier} ({top.type}); "
                           "confirm against legislation or an expert.")
     return DraftAnswer(
         answer=answer,
         cited_source_ids=cited,
         unverified_points=unverified,
-        missing_context_questions=[],
+        missing_context_questions=missing,
     )
 
 
@@ -108,7 +109,7 @@ def draft_answer(q: Question, ranked: list[RankedSource], action: Action, use_ll
         draft = response.parsed_output
     except Exception as exc:  # no credentials, network, API error -> stay usable offline
         draft = template_answer(q, ranked, action)
-        draft.unverified_points.append(f"(LLM unavailable: {type(exc).__name__}; showing template answer)")
+        draft.unverified_points.append(f"(Claude unavailable - {type(exc).__name__}: {str(exc)[:120]}; showing template answer)")
         return draft, "template"
 
     # Citation guard: the model may only cite evidence it was given.

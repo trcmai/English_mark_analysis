@@ -23,10 +23,26 @@ evidence isn't good enough, then stores the expert's validated answer as reusabl
 8. **Capture** (`capture.py`): the validated answer becomes a knowledge item with evidence links and
    a 12-month review date; it can supersede the source the expert rejected.
 
-## Usage
+## Web interface
 
 ```bash
 pip install -r requirements.txt
+python -m payroll_passport.web            # http://127.0.0.1:8000
+```
+
+- **Ask** a question with its context (country, pay date, topic, client, employee).
+- See the decision, the cited answer, trust-ranked evidence, and outdated / not-applicable sources.
+- When escalated, the suggested expert and case brief are shown with a **validation form**. Saving
+  stores a knowledge item and re-runs the question.
+- **Knowledge base** tab lists every source.
+
+The server works on `payroll_kb.json` in the current directory (created from the sample on first
+run; ignored by git). Use `--kb`, `--host`, `--port` to change this. It binds to localhost only and
+has no login, so don't expose it on a network as is.
+
+## Command line
+
+```bash
 
 # Ask (add --no-llm to skip the Claude call)
 python -m payroll_passport ask "Adult minimum hourly wage?" \
@@ -55,6 +71,8 @@ and reads credentials from `ANTHROPIC_API_KEY` or an `ant auth login` profile.
 - Conflict detection compares structured claims only; free-text rules aren't compared.
 - Weights and thresholds (`TIER_PRIOR`, `MIN_TOP_SCORE`, ...) are unvalidated guesses. Tune them
   against a set of real questions with known answers.
+- If the employee type is left blank, sources limited to a specific employee group (e.g. adults) are
+  still used, but the result is downgraded to "answer with gaps" and the missing context is flagged.
 - Legal override rules (e.g. a contract may exceed but not undercut a statutory minimum) are not
   modelled; client-specific terms are surfaced alongside the general rule instead.
 

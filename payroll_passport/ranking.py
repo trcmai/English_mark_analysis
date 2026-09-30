@@ -24,6 +24,7 @@ class RankedSource:
     source: Source
     score: float
     notes: list[str] = field(default_factory=list)
+    needs_context: list[str] = field(default_factory=list)   # assumptions the consultant must confirm
 
 
 @dataclass
@@ -44,7 +45,9 @@ def applicability_problem(source: Source, q: Question) -> str | None:
         return f"country {source.country} != {q.country}"
     if source.client not in (GENERIC_CLIENT, q.client):
         return "belongs to another client"  # client isolation: never leak across clients
-    if ANY_EMPLOYEE not in source.employee_scope and q.employee_ctx not in source.employee_scope:
+    # An unspecified employee context does not exclude narrower sources; it is flagged in ranking instead.
+    if (q.employee_ctx != ANY_EMPLOYEE and ANY_EMPLOYEE not in source.employee_scope
+            and q.employee_ctx not in source.employee_scope):
         return f"employee scope {source.employee_scope} excludes '{q.employee_ctx}'"
     if not in_force(source, q):
         return f"not in force on {q.on_date.isoformat()}"
@@ -94,7 +97,8 @@ def rank_evidence(kb: KnowledgeBase, q: Question) -> RankingResult:
 
     # Supersession: an in-force replacement makes the old source outdated.
     for e in kb.edges:
-        if e.relation == "supersedes" and e.dst in retrieved_ids and e.src in kb.sources:
+        if (e.relation == "supersedes" and e.dst in retrieved_ids and e.dst not in not_applicable
+                and e.src in kb.sources):
             if in_force(kb.sources[e.src], q):
                 outdated.setdefault(e.dst, f"superseded by {e.src}")
 
@@ -135,6 +139,10 @@ def rank_evidence(kb: KnowledgeBase, q: Question) -> RankingResult:
                 notes.append(f"validated by {s.validated_by}")
         if s.client != GENERIC_CLIENT:
             notes.append(f"client-specific ({s.client})")
-        ranked.append(RankedSource(s, scores[s.id], notes))
+        needs = []
+        if q.employee_ctx == ANY_EMPLOYEE and ANY_EMPLOYEE not in s.employee_scope:
+            needs.append(f"employee is {' or '.join(s.employee_scope)}")
+            notes.append(f"only for employee scope {s.employee_scope}")
+        ranked.append(RankedSource(s, scores[s.id], notes, needs))
     ranked.sort(key=lambda r: (-r.score, r.source.tier))
     return RankingResult(ranked, outdated, not_applicable)

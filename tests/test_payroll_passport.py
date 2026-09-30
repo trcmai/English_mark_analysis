@@ -90,7 +90,7 @@ def test_high_risk_topic_escalates_even_with_law(kb):
 def test_no_source_escalates(kb):
     out = ask(kb, q("pension_contribution"), use_llm=False)
     assert out.decision.action == Action.ESCALATE
-    assert out.decision.reasons == ["no applicable source in force on the question date"]
+    assert out.decision.reasons == ["no source applies to this country, client, employee and date"]
 
 
 def test_closed_loop_escalate_validate_answer(kb, tmp_path):
@@ -159,3 +159,19 @@ def test_llm_failure_falls_back_to_template(kb, monkeypatch):
     draft, mode = draft_answer(q("min_wage_hourly"), ranked, Action.ANSWER)
     assert mode == "template"
     assert "14.0" in draft.answer
+
+
+def test_unspecified_employee_does_not_fall_back_to_outdated_guide(kb):
+    out = ask(kb, q("min_wage_hourly"), use_llm=False)   # employee context not given
+    assert out.ranking.ranked[0].source.id == "NL_LAW_MINWAGE_2026"
+    assert "INT_GUIDE_2024" in out.ranking.outdated
+    assert out.decision.action == Action.ANSWER_WITH_GAPS
+    assert "14.0" in out.draft.answer
+    assert out.draft.missing_context_questions == ["Confirm that the employee is adult."]
+
+
+def test_outdated_and_not_applicable_are_disjoint(kb):
+    result = rank_evidence(kb, q("min_wage_hourly", employee_ctx="adult"))
+    other = rank_evidence(kb, Question("x", "DE", "min_wage_hourly", MARCH_2026))
+    assert not set(result.outdated) & set(result.not_applicable)
+    assert not set(other.outdated) & set(other.not_applicable)
