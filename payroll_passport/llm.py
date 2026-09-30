@@ -76,9 +76,12 @@ def template_answer(q: Question, ranked: list[RankedSource], action: Action) -> 
                 cited.append(s.id)
     unverified = []
     missing = [f"Confirm that the {n}." for n in ranked[0].needs_context]
-    if action == Action.ANSWER_WITH_GAPS and not missing:
+    if action == Action.ANSWER_WITH_GAPS and not missing and top.tier > 2:
         unverified.append(f"Top evidence is only authority tier {top.tier} ({top.type}); "
                           "confirm against legislation or an expert.")
+    if q.topic_confidence != "high":
+        unverified.append(f"The topic ({q.topic.replace('_', ' ')}) was inferred from the wording; "
+                          "confirm the question is about this before using the answer.")
     return DraftAnswer(
         answer=answer,
         cited_source_ids=cited,

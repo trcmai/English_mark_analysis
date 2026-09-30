@@ -8,10 +8,13 @@ evidence isn't good enough, then stores the expert's validated answer as reusabl
 
 ## How an answer is produced
 
-1. **Detect the topic** from the question text (`topics.py`): payroll terms in English plus common local
-   terms, with the country breaking ties (e.g. "minimum wage" is monthly in BE/VN). The matched words are
-   shown. A question that mixes topics or matches none is sent back to be rephrased, not guessed. With
-   Claude enabled, Claude classifies questions the keywords don't recognise.
+1. **Relate the question to a topic** (`topics.py`). Payroll terms in the question decide it (high
+   confidence), with the country breaking ties (e.g. "minimum wage" is monthly in BE/VN). A question that
+   mixes topics uses the strongest one and names the other (medium). With no matching terms, the most
+   similar topic description is used, compared on word fragments so typos and everyday wording still
+   land (medium/low). With Claude enabled, Claude classifies instead of the similarity step. An inferred
+   topic can never produce a plain "Answer", and a question resembling no topic (similarity < 0.10) is
+   escalated. The consultant can switch to one of the next closest topics.
 2. **Retrieve** sources tagged with that topic.
 3. **Applicability rules** (deterministic): country, client (other clients' documents are never used),
    employee scope, and in force on the question date.
@@ -75,8 +78,8 @@ and reads credentials from `ANTHROPIC_API_KEY` or an `ant auth login` profile.
 
 ## Known limitations
 
-- Topic detection is keyword-based (Claude only as a fallback), so unusual wording can miss; there is no
-  semantic search or document ingestion yet.
+- Topic similarity compares word fragments, not meaning: it catches typos and shared wording, but can pick the
+  wrong topic for paraphrases (these come out as low confidence). There is no document ingestion yet.
 - Sources must be tagged by hand (scope, dates, structured claims).
 - Conflict detection compares structured claims only; free-text rules aren't compared.
 - Weights and thresholds (`TIER_PRIOR`, `MIN_TOP_SCORE`, ...) are unvalidated guesses. Tune them

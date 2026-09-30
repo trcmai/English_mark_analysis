@@ -15,7 +15,7 @@ from .assistant import ask, render
 from .capture import capture
 from .knowledge_base import DEFAULT_KB, KnowledgeBase
 from .models import Claim, Question
-from .topics import explain_unresolved, resolve_topic
+from .topics import describe, resolve_topic
 
 
 def _question(a, use_llm=False) -> Question:
@@ -23,12 +23,12 @@ def _question(a, use_llm=False) -> Question:
     if not topic:
         kb = KnowledgeBase.load(a.kb)
         match = resolve_topic(a.question, kb.sources.values(), a.country, use_llm)
-        if match.topic is None:
-            raise SystemExit(explain_unresolved(match))
-        topic = match.topic
-        how = "Claude" if match.method == "claude" else "matched: " + ", ".join(match.matched)
-        print(f"Topic: {topic.replace('_', ' ')} ({how})\n")
-    return Question(text=a.question, country=a.country, topic=topic,
+        topic, confidence, note = match.topic, match.confidence, describe(match)
+        alts = ", ".join(t.replace("_", " ") for t in match.alternatives)
+        print(f"Topic: {topic.replace('_', ' ')} ({confidence.replace('_', ' ')} confidence) - {note}" + (f"\n  Other close topics: {alts} (use --topic)" if confidence != "high" else "") + "\n")
+    else:
+        confidence, note = "high", "chosen with --topic"
+    return Question(text=a.question, country=a.country, topic=topic, topic_confidence=confidence, topic_note=note,
                     on_date=date.fromisoformat(a.date), client=a.client, employee_ctx=a.employee)
 
 

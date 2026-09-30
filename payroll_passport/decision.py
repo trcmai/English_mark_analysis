@@ -77,13 +77,22 @@ def decide(q: Question, result: RankingResult) -> Decision:
 
     if q.topic in HIGH_RISK_TOPICS:
         return Decision(Action.ESCALATE, [f"'{q.topic}' is a high-risk topic: expert sign-off required"], conflicts)
+    if q.topic_confidence == "very_low":
+        return Decision(Action.ESCALATE, [f"the question does not clearly match any payroll topic "
+                                          f"(closest: {q.topic.replace('_', ' ')})"], conflicts)
     if conflicts:
         return Decision(Action.ESCALATE, ["ranked sources disagree"], conflicts)
     if top.needs_context:
-        return Decision(Action.ANSWER_WITH_GAPS,
-                        [f"top evidence only applies if {' and '.join(top.needs_context)}: confirm with the consultant"])
-    if top.score >= MIN_TOP_SCORE and (best_tier <= 2 or top_is_current_validated):
-        return Decision(Action.ANSWER, [f"top source {top.source.id} is authoritative and uncontested"])
-    if best_tier <= 4:
-        return Decision(Action.ANSWER_WITH_GAPS, ["only mid-authority evidence; answer must list what is unverified"])
-    return Decision(Action.ESCALATE, ["only low-authority evidence (emails/notes/wiki)"])
+        decision = Decision(Action.ANSWER_WITH_GAPS,
+                            [f"top evidence only applies if {' and '.join(top.needs_context)}: confirm with the consultant"])
+    elif top.score >= MIN_TOP_SCORE and (best_tier <= 2 or top_is_current_validated):
+        decision = Decision(Action.ANSWER, [f"top source {top.source.id} is authoritative and uncontested"])
+    elif best_tier <= 4:
+        decision = Decision(Action.ANSWER_WITH_GAPS, ["only mid-authority evidence; answer must list what is unverified"])
+    else:
+        return Decision(Action.ESCALATE, ["only low-authority evidence (emails/notes/wiki)"])
+    # An inferred or mixed topic can never produce a plain answer: the consultant confirms the topic.
+    if q.topic_confidence != "high":
+        decision.action = Action.ANSWER_WITH_GAPS
+        decision.reasons.append(f"topic '{q.topic.replace('_', ' ')}' was inferred ({q.topic_note}): confirm it fits the question")
+    return decision

@@ -73,6 +73,8 @@ class Question:
     on_date: date
     client: str = GENERIC_CLIENT
     employee_ctx: str = ANY_EMPLOYEE
+    topic_confidence: str = "high"   # how sure the topic detection was: high | medium | low | very_low
+    topic_note: str = ""             # how the topic was chosen, shown when confidence is not high
 
 
 @dataclass

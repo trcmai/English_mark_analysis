@@ -21,7 +21,7 @@ from .assistant import Outcome, ask
 from .capture import capture
 from .knowledge_base import DEFAULT_KB, KnowledgeBase
 from .models import Claim, Question, Source
-from .topics import explain_unresolved, resolve_topic
+from .topics import TopicMatch, describe, resolve_topic
 
 STATIC = Path(__file__).parent / "static"
 
@@ -92,13 +92,15 @@ class App:
         if not str(p.get("question", "")).strip():
             raise ValueError("missing field: question")
         use_llm = bool(p.get("use_llm"))
-        match = resolve_topic(p["question"], self.kb.sources.values(), p.get("country", ""), use_llm)
-        detected = {"topic": match.topic, "matched": match.matched, "method": match.method,
-                    "candidates": match.candidates, "reason": match.reason}
-        if match.topic is None:
-            return {"topic": detected, "message": explain_unresolved(match)}
-        result = outcome_dict(ask(self.kb, _question({**p, "topic": match.topic}), use_llm=use_llm), self.kb)
-        result["topic"] = detected
+        if p.get("topic"):   # consultant picked one of the suggested topics
+            match = TopicMatch(p["topic"], method="chosen", confidence="high")
+        else:
+            match = resolve_topic(p["question"], self.kb.sources.values(), p.get("country", ""), use_llm)
+        q = _question({**p, "topic": match.topic})
+        q.topic_confidence, q.topic_note = match.confidence, describe(match)
+        result = outcome_dict(ask(self.kb, q, use_llm=use_llm), self.kb)
+        result["topic"] = {"topic": match.topic, "method": match.method, "confidence": match.confidence,
+                           "description": describe(match), "alternatives": match.alternatives}
         return result
 
     def validate(self, p: dict) -> dict:
@@ -116,7 +118,8 @@ class App:
                        p.get("evidence", []), p.get("supersedes", []))
         self.kb.save(self.kb_path)
         outcome = outcome_dict(ask(self.kb, q, use_llm=False), self.kb)
-        outcome["topic"] = {"topic": q.topic, "matched": [], "method": "previous", "candidates": [], "reason": ""}
+        outcome["topic"] = {"topic": q.topic, "method": "previous", "confidence": "high",
+                            "description": "same question as before", "alternatives": []}
         return {"stored": _source_dict(item), "outcome": outcome}
 
 

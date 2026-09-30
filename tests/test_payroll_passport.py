@@ -227,18 +227,53 @@ def test_topic_detected_from_question(kb, country, question, topic):
     assert detect_topic(question, topics_for_country(kb.sources.values(), country)).topic == topic
 
 
-def test_mixed_topics_are_not_guessed(kb):
+def test_mixed_topics_use_strongest_and_name_the_other(kb):
     m = detect_topic("sick leave and termination rules", topics_for_country(kb.sources.values(), "FR"))
-    assert m.topic is None and m.reason == "several_topics"
-    assert set(m.candidates) == {"sick_pay", "termination"}
+    assert m.topic == "sick_pay" and m.confidence == "medium"
+    assert m.also_mentions == ["termination"]
 
 
-def test_unknown_topic_is_not_guessed(kb):
-    m = resolve_topic("How do I file the payroll return?", kb.sources.values(), "NL", use_llm=False)
-    assert m.topic is None and m.reason == "no_match"
+@pytest.mark.parametrize("country,question,topic", [
+    ("NL", "minimun wage for adults", "min_wage_hourly"),              # typo
+    ("DE", "Extra pay for weekend work?", "overtime_premium"),
+    ("VN", "extra month salary before lunar new year", "thirteenth_month"),
+    ("NL", "Can staff claim driving costs?", "travel_allowance"),
+])
+def test_no_keyword_falls_back_to_most_similar_topic(kb, country, question, topic):
+    m = detect_topic(question, topics_for_country(kb.sources.values(), country))
+    assert m.method == "similarity" and m.topic == topic and m.confidence in ("medium", "low")
+
+
+def test_inferred_topic_never_gives_a_plain_answer(kb):
+    m = resolve_topic("minimun wage for adults", kb.sources.values(), "NL")
+    q = Question("minimun wage", "NL", m.topic, MARCH_2026, employee_ctx="adult",
+                 topic_confidence=m.confidence, topic_note="similarity")
+    out = ask(kb, q, use_llm=False)
+    assert out.decision.action == Action.ANSWER_WITH_GAPS
+    assert any("inferred" in r for r in out.decision.reasons)
+
+
+def test_unrelated_question_is_escalated(kb):
+    m = resolve_topic("hello", kb.sources.values(), "NL")
+    assert m.topic and m.confidence == "very_low"
+    q = Question("hello", "NL", m.topic, MARCH_2026, topic_confidence=m.confidence)
+    assert ask(kb, q, use_llm=False).decision.action == Action.ESCALATE
 
 
 def test_detected_topic_without_country_sources_escalates(kb):
     m = resolve_topic("What is the pension contribution?", kb.sources.values(), "NL")
     out = ask(kb, Question("pension?", "NL", m.topic, MARCH_2026), use_llm=False)
     assert out.decision.action == Action.ESCALATE
+
+
+def test_generic_payroll_words_do_not_steer_similarity(kb):
+    m = detect_topic("An employee is off for two weeks with the flu. What do we pay?", topics_for_country(kb.sources.values(), "UK"))
+    assert m.topic == "sick_pay"
+
+
+def test_inferred_topic_note_does_not_blame_strong_evidence(kb):
+    q = Question("flu", "UK", "sick_pay", date(2026, 5, 1), topic_confidence="low", topic_note="similarity")
+    out = ask(kb, q, use_llm=False)
+    assert out.decision.action == Action.ANSWER_WITH_GAPS
+    assert not any("authority tier" in u for u in out.draft.unverified_points)
+    assert any("inferred" in u for u in out.draft.unverified_points)

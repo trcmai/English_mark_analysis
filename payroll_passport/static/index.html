@@ -93,6 +93,12 @@ th { color: var(--muted); font-weight: 600; border-top: 0; }
 .hidden { display: none; }
 .topic-line { font-size: 14px; }
 .topic-line .chip { font-family: inherit; font-size: 13px; }
+.conf { font-size: 12px; padding: 1px 7px; border-radius: 999px; margin: 0 4px; }
+.conf-high { background: var(--ok-soft); color: var(--ok); }
+.conf-medium { background: var(--warn-soft); color: var(--warn); }
+.conf-low, .conf-very_low { background: var(--bad-soft); color: var(--bad); }
+button.alt { font: inherit; font-size: 13px; background: none; border: 1px solid var(--border); color: var(--accent);
+  border-radius: 999px; padding: 1px 8px; margin-left: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -110,7 +116,7 @@ th { color: var(--muted); font-weight: 600; border-top: 0; }
       <h2>Question</h2>
       <label for="question">Question</label>
       <textarea id="question" required>What is the adult minimum hourly wage?</textarea>
-      <div class="hint">The topic is detected from the question, e.g. "minimum wage", "sick pay", "travel allowance".</div>
+      <div class="hint">The topic is taken from the question: the matching payroll terms, or otherwise the most similar topic.</div>
       <div class="row">
         <div><label for="country">Country</label><select id="country"></select></div>
         <div><label for="date">Pay date</label><input id="date" type="date" required></div>
@@ -222,24 +228,26 @@ function fmtClaims(claims) {
 
 const topicName = t => t.replace(/_/g, " ");
 
-function topicLine(t) {
-  const how = t.method === "claude" ? "classified by Claude"
-    : t.method === "previous" ? "same question as before"
-    : "from: " + t.matched.map(m => `"${m}"`).join(", ");
-  return el("div", {class: "topic-line"}, el("span", {class: "reason", text: "Topic "}),
-    el("span", {class: "chip", text: topicName(t.topic)}), el("span", {class: "reason", text: " " + how}));
-}
-
-function renderUnresolved(res) {
-  const card = el("div", {class: "card decision ESCALATE"},
-    el("div", {class: "label", text: "Rephrase the question"}), el("div", {text: res.message}));
-  $("#results").replaceChildren(card);
+function topicLine(t, q) {
+  const line = el("div", {class: "topic-line"}, el("span", {class: "reason", text: "Topic "}),
+    el("span", {class: "chip", text: topicName(t.topic)}),
+    el("span", {class: `conf conf-${t.confidence}`, text: t.confidence.replace("_", " ") + " confidence"}),
+    el("span", {class: "reason", text: " " + t.description}));
+  if (t.confidence !== "high" && t.alternatives.length) {
+    line.append(el("span", {class: "reason", text: " · Not right? Try "}));
+    for (const alt of t.alternatives) {
+      const b = el("button", {type: "button", class: "alt", text: topicName(alt)});
+      b.addEventListener("click", () => askWith({...q, topic: alt}));
+      line.append(b);
+    }
+  }
+  return line;
 }
 
 function renderOutcome(o, q) {
   const root = $("#results");
   root.replaceChildren();
-  if (o.topic) { q.topic = o.topic.topic; root.append(topicLine(o.topic)); }
+  if (o.topic) { root.append(topicLine(o.topic, {...q})); q.topic = o.topic.topic; }
 
   const dec = el("div", {class: `card decision ${o.action}`},
     el("div", {class: "label", text: ACTION_LABEL[o.action] || o.action}),
@@ -363,14 +371,21 @@ function renderKb() {
   }
 }
 
+async function askWith(q) {
+  LAST_Q = q;
+  try {
+    renderOutcome(await api("/api/ask", q), {...q});
+  } catch (err) {
+    $("#results").replaceChildren(el("div", {class: "card toast error", text: err.message}));
+  }
+}
+
 $("#askForm").addEventListener("submit", async ev => {
   ev.preventDefault();
   const btn = $("#askBtn");
   btn.disabled = true; btn.textContent = "Checking sources…";
   try {
-    LAST_Q = formQuestion();
-    const res = await api("/api/ask", LAST_Q);
-    if (res.action) renderOutcome(res, LAST_Q); else renderUnresolved(res);
+    await askWith(formQuestion());
   } catch (err) {
     $("#results").replaceChildren(el("div", {class: "card toast error", text: err.message}));
   } finally {
